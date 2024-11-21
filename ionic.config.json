@@ -1,0 +1,7 @@
+{
+  "name": "woodFactory",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}

@@ -6,6 +6,9 @@ const GRASS_COLOR = 0x8b9150;
 const BUBBLE_1_TILE = 32 * 14 + 3;
 const BUBBLE_2_TILE = 32 * 14 + 5;
 const WATER_TILE = 32 * 12 + 7;
+const WAVES_1_TILE = 32 * 17 + 21;
+const WAVES_2_TILE = 32 * 17 + 22;
+const WAVES_3_TILE = 32 * 17 + 23;
 
 const RIVER_EDGE_TILE = 32 * 13 + 7;
 
@@ -48,11 +51,14 @@ const paintRiver = (scene, tileSize, gridWidth) => {
 
     const waterTiles = [
         BUBBLE_1_TILE,
-        BUBBLE_2_TILE
+        BUBBLE_2_TILE,
+        WAVES_1_TILE,
+        WAVES_2_TILE,
+        WAVES_3_TILE
     ];
     for (let x = -tileSize; x < tileSize * gridWidth; x += SPRITE_FRAME_SIZE) {
         let waterTile = WATER_TILE;
-        if (Math.random() > 0.90) {
+        if (Math.random() > 0.80) {
             waterTile = chooseRandomFromArray(waterTiles);
         }
         scene.add.sprite(x, -tileSize, 'terrain', waterTile).setOrigin(0, 0);

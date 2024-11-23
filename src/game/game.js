@@ -1,15 +1,43 @@
 import {Game, AUTO, Scale, Scene} from "phaser";
+import {GRID_HEIGHT, GRID_WIDTH, LONG_PRESS_DURATION_MS, SELL_PRICE, TILE_SIZE} from "./properties.js";
+import {createObject, getPrice} from "./gameObjects.js";
 
-class MainScene extends Scene {
+
+function getSuccessResponse() {
+    return {success: true};
+}
+
+function getErrorResponse(message) {
+    return {success: false, message: message};
+}
+
+export class MainScene extends Scene {
     constructor() {
         super({key: 'MainScene'})
+
+        this.grid = null;
+        this.money = null;
+        this.newPlacableObject = null;
+        this.movingObject = null;
+        this.tempExistingObject = null;
+        this.selectedObject = null;
+        this.longPressTimer = null;
+
+        this.setMoney(10000);
     }
 
     create() {
-        const tileSize = 100;
-        const gridWidth = 20;
-        const gridHeight = 20;
+        const tileSize = TILE_SIZE;
+        const gridWidth = GRID_WIDTH;
+        const gridHeight = GRID_HEIGHT;
 
+        this.initializeCamera(tileSize, gridWidth, gridHeight);
+        this.drawBackground(tileSize, gridWidth, gridHeight);
+
+        this.initializeGrid(gridWidth, gridHeight);
+    }
+
+    drawBackground(tileSize, gridWidth, gridHeight) {
         const graphics = this.add.graphics();
 
         for (let row = 0; row < gridHeight; row++) {
@@ -33,12 +61,14 @@ class MainScene extends Scene {
                 graphics.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
             }
         }
+    }
 
+    initializeCamera(tileSize, gridWidth, gridHeight) {
         const worldWidth = gridWidth * tileSize;
         const worldHeight = (gridHeight + 1) * (tileSize + 1);
         this.cameras.main.setBounds(-tileSize, -tileSize, worldWidth, worldHeight);
 
-        this.cameras.main.scrollX = -tileSize*0.5;
+        this.cameras.main.scrollX = -tileSize * 0.5;
         this.cameras.main.scrollY = -tileSize;
 
         this.isDragging = false;
@@ -48,6 +78,22 @@ class MainScene extends Scene {
             this.isDragging = true;
             this.dragStart.x = pointer.x + this.cameras.main.scrollX;
             this.dragStart.y = pointer.y + this.cameras.main.scrollY;
+
+            this.longPressTimer = this.time.delayedCall(
+                LONG_PRESS_DURATION_MS,
+                () => this.handleLongPress(pointer),
+                null,
+                this
+            );
+
+            const tileX = Math.floor(pointer.worldX / TILE_SIZE);
+            const tileY = Math.floor(pointer.worldY / TILE_SIZE);
+
+            if (this.newPlacableObject) {
+                this.tryToSelectNewPlaceForObject(this.newPlacableObject, tileX, tileY);
+            } else if (this.movingObject) {
+                this.tryToSelectNewPlaceForObject(this.movingObject, tileX, tileY);
+            }
         });
 
         this.input.on('pointermove', (pointer) => {
@@ -59,6 +105,10 @@ class MainScene extends Scene {
 
         this.input.on('pointerup', () => {
             this.isDragging = false;
+            if (this.longPressTimer) {
+                this.longPressTimer.remove(false); // Cancel the timer
+                this.longPressTimer = null;
+            }
         });
 
         this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
@@ -68,8 +118,171 @@ class MainScene extends Scene {
         });
     }
 
+    tryToSelectNewPlaceForObject(object, tileX, tileY) {
+        if (tileX < 0 || tileX >= GRID_WIDTH || tileY < 0 || tileY >= GRID_HEIGHT) {
+            return;
+        }
+        if (object.gridX === tileX && object.gridY === tileY) {
+            return;
+        }
+
+        object.gridX = tileX;
+        object.gridY = tileY;
+        object.paint();
+    }
+
+    handleLongPress(pointer) {
+        if (this.newPlacableObject || this.movingObject || this.selectedObject) {
+            return;
+        }
+
+        const tileX = Math.floor(pointer.worldX / TILE_SIZE);
+        const tileY = Math.floor(pointer.worldY / TILE_SIZE);
+
+        if (tileX < 0 || tileX >= GRID_WIDTH || tileY < 0 || tileY >= GRID_HEIGHT) {
+            return;
+        }
+        if (!this.grid[tileX][tileY]) {
+            return;
+        }
+
+        this.selectedObject = this.grid[tileX][tileY];
+        this.selectedObject.setSelected(true);
+        this.selectedObject.paint();
+        const movingExistingObjectEvent = new CustomEvent("movingExistingObject", {
+            detail: {}
+        });
+        window.dispatchEvent(movingExistingObjectEvent);
+    }
+
+    initializeGrid(gridWidth, gridHeight) {
+        this.grid = Array.from({ length: gridWidth }, () => Array(gridHeight).fill(null));
+    }
 
     update() {
+    }
+
+    setNewPotentialObject(id) {
+        if (getPrice(id) > this.money) {
+            return getErrorResponse("Not enough money");
+        }
+
+        this.newPlacableObject = createObject(id, this);
+        return getSuccessResponse();
+    }
+
+    cancelPlacingNewObject() {
+        this.newPlacableObject.clear();
+        this.newPlacableObject = null;
+        return getSuccessResponse();
+    }
+
+    acceptNewObject() {
+        if (!this.newPlacableObject) {
+             return getErrorResponse("No object to place");
+        }
+
+        const price = getPrice(this.newPlacableObject.id);
+        if (price > this.money) {
+            return getErrorResponse("Not enough money");
+        }
+
+        if (!this.newPlacableObject.canBePlaced()) {
+            return getErrorResponse("Cannot place the object here");
+        }
+
+        this.grid[this.newPlacableObject.gridX][this.newPlacableObject.gridY] = this.newPlacableObject;
+        this.newPlacableObject.paint();
+        this.newPlacableObject = null;
+
+        this.setMoney(this.money - price);
+
+        return getSuccessResponse();
+    }
+
+    setMoney(money) {
+        this.money = money;
+        const moneyUpdateEvent = new CustomEvent("moneyUpdate", {
+            detail: { money: this.money }
+        });
+
+        window.dispatchEvent(moneyUpdateEvent);
+    }
+
+    rotateNewObject() {
+        if (this.newPlacableObject) {
+            this.newPlacableObject.rotate();
+            this.newPlacableObject.paint();
+        }
+    }
+
+    cancelSelection() {
+        if (this.selectedObject) {
+            this.selectedObject.setSelected(false);
+            this.selectedObject.paint();
+            this.selectedObject = null;
+        }
+    }
+
+    sellSelection() {
+        if (this.selectedObject) {
+            const price = Math.ceil(getPrice(this.selectedObject.id) * SELL_PRICE);
+
+            this.selectedObject.clear();
+            this.grid[this.selectedObject.gridX][this.selectedObject.gridY] = null;
+            this.selectedObject = null;
+
+            this.setMoney(this.money + price);
+        }
+    }
+
+    moveSelectedObject() {
+        if (this.selectedObject) {
+            this.selectedObject.setSelected(false);
+            this.tempExistingObject = this.selectedObject;
+            this.movingObject = Object.assign(Object.create(Object.getPrototypeOf(this.selectedObject)), this.selectedObject);
+            this.selectedObject = null;
+
+            this.grid[this.tempExistingObject.gridX][this.tempExistingObject.gridY] = null;
+
+            this.tempExistingObject.clear();
+            this.movingObject.paint();
+        }
+    }
+
+    rotateMovingObject() {
+        if (this.movingObject) {
+            this.movingObject.rotate();
+            this.movingObject.paint();
+        }
+    }
+
+    cancelMovingObject() {
+        if (this.movingObject) {
+            this.movingObject.clear();
+            this.movingObject = null;
+
+            this.grid[this.tempExistingObject.gridX][this.tempExistingObject.gridY] = this.tempExistingObject;
+            this.tempExistingObject.paint();
+            this.tempExistingObject = null;
+        }
+    }
+
+    acceptMovingObject() {
+        if (!this.movingObject) {
+            return getErrorResponse("No object to move");
+        }
+
+        if (!this.movingObject.canBePlaced()) {
+            return getErrorResponse("Cannot place the object here");
+        }
+
+        this.grid[this.movingObject.gridX][this.movingObject.gridY] = this.movingObject;
+        this.movingObject.paint();
+        this.movingObject = null;
+        this.tempExistingObject = null;
+
+        return getSuccessResponse();
     }
 }
 

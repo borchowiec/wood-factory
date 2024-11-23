@@ -1,6 +1,14 @@
 import {Game, AUTO, Scale, Scene} from "phaser";
-import {GRID_HEIGHT, GRID_WIDTH, LONG_PRESS_DURATION_MS, SELL_PRICE, TILE_SIZE} from "./properties.js";
+import {
+    GRID_HEIGHT,
+    GRID_WIDTH,
+    LONG_PRESS_DURATION_MS,
+    SELL_PRICE,
+    SPRITE_FRAME_SIZE,
+    TILE_SIZE
+} from "./properties.js";
 import {createObject, getPrice} from "./gameObjects.js";
+import {paintTerrain} from "./terrainPainter.js";
 
 
 function getSuccessResponse() {
@@ -26,41 +34,22 @@ export class MainScene extends Scene {
         this.setMoney(10000);
     }
 
+    preload() {
+        this.load.spritesheet('terrain',
+            'assets/terrain_atlas.png',
+            {frameWidth: SPRITE_FRAME_SIZE, frameHeight: SPRITE_FRAME_SIZE}
+        );
+    }
+
     create() {
         const tileSize = TILE_SIZE;
         const gridWidth = GRID_WIDTH;
         const gridHeight = GRID_HEIGHT;
 
         this.initializeCamera(tileSize, gridWidth, gridHeight);
-        this.drawBackground(tileSize, gridWidth, gridHeight);
+        paintTerrain(this, tileSize, gridWidth, gridHeight);
 
         this.initializeGrid(gridWidth, gridHeight);
-    }
-
-    drawBackground(tileSize, gridWidth, gridHeight) {
-        const graphics = this.add.graphics();
-
-        for (let row = 0; row < gridHeight; row++) {
-            const col = -1;
-            const color = (row + col) % 2 === 0 ? 0x005500 : 0x003300;
-            graphics.fillStyle(color, 1);
-            graphics.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
-        }
-
-        for (let col = -1; col < gridWidth; col++) {
-            const row = -1;
-            const color = (row + col) % 2 === 0 ? 0x000055 : 0x000033;
-            graphics.fillStyle(color, 1);
-            graphics.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
-        }
-
-        for (let row = 0; row < gridHeight; row++) {
-            for (let col = 0; col < gridWidth; col++) {
-                const color = (row + col) % 2 === 0 ? 0x555555 : 0x333333;
-                graphics.fillStyle(color, 1);
-                graphics.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
-            }
-        }
     }
 
     initializeCamera(tileSize, gridWidth, gridHeight) {
@@ -114,7 +103,7 @@ export class MainScene extends Scene {
         this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
             const zoomChange = deltaY * -0.001;
             this.cameras.main.zoom += zoomChange;
-            this.cameras.main.zoom = Phaser.Math.Clamp(this.cameras.main.zoom, 0.5, 3);
+            this.cameras.main.zoom = Phaser.Math.Clamp(this.cameras.main.zoom, 0.7, 3);
         });
     }
 
@@ -156,7 +145,7 @@ export class MainScene extends Scene {
     }
 
     initializeGrid(gridWidth, gridHeight) {
-        this.grid = Array.from({ length: gridWidth }, () => Array(gridHeight).fill(null));
+        this.grid = Array.from({length: gridWidth}, () => Array(gridHeight).fill(null));
     }
 
     update() {
@@ -179,7 +168,7 @@ export class MainScene extends Scene {
 
     acceptNewObject() {
         if (!this.newPlacableObject) {
-             return getErrorResponse("No object to place");
+            return getErrorResponse("No object to place");
         }
 
         const price = getPrice(this.newPlacableObject.id);
@@ -203,7 +192,7 @@ export class MainScene extends Scene {
     setMoney(money) {
         this.money = money;
         const moneyUpdateEvent = new CustomEvent("moneyUpdate", {
-            detail: { money: this.money }
+            detail: {money: this.money}
         });
 
         window.dispatchEvent(moneyUpdateEvent);
@@ -289,6 +278,7 @@ export class MainScene extends Scene {
 export function launch() {
     return new Game({
         type: AUTO,
+        pixelArt: true,
         scale: {
             mode: Scale.RESIZE,
             width: window.innerWidth * window.devicePixelRatio,

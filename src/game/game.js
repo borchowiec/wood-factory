@@ -39,6 +39,11 @@ export class MainScene extends Scene {
             'assets/terrain_atlas.png',
             {frameWidth: SPRITE_FRAME_SIZE, frameHeight: SPRITE_FRAME_SIZE}
         );
+
+        this.load.spritesheet('conveyorBelt', 'assets/objects/conveyor-belt/sprite.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        });
     }
 
     create() {
@@ -50,6 +55,13 @@ export class MainScene extends Scene {
         paintTerrain(this, tileSize, gridWidth, gridHeight);
 
         this.initializeGrid(gridWidth, gridHeight);
+
+        this.anims.create({
+            key: 'conveyorBeltAnim',
+            frames: this.anims.generateFrameNumbers('conveyorBelt', {frames: [0, 1, 2, 3]}),
+            frameRate: 10,
+            repeat: -1
+        });
     }
 
     initializeCamera(tileSize, gridWidth, gridHeight) {
@@ -235,6 +247,7 @@ export class MainScene extends Scene {
             this.grid[this.tempExistingObject.gridX][this.tempExistingObject.gridY] = null;
 
             this.tempExistingObject.clear();
+            this.movingObject.clear();
             this.movingObject.paint();
         }
     }

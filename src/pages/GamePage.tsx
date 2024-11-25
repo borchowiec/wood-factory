@@ -1,4 +1,4 @@
-import {IonButton, IonContent, IonFooter, IonIcon, IonPage, IonText} from '@ionic/react';
+import {IonButton, IonContent, IonFooter, IonIcon, IonImg, IonPage, IonText} from '@ionic/react';
 import React, {useEffect, useState} from "react";
 import {Game} from "phaser";
 import {launch, MainScene} from "../game/game.js";
@@ -46,7 +46,12 @@ const GamePage: React.FC = () => {
     };
 
     const gameObjects: GameObject[] = [
-        {id: CONVEYOR_BELT_ID, name: "Conveyor Belt", icon: storefront, price: getPrice(CONVEYOR_BELT_ID)},
+        {
+            id: CONVEYOR_BELT_ID,
+            name: "Conveyor Belt",
+            icon: "assets/objects/conveyor-belt/icon.png",
+            price: getPrice(CONVEYOR_BELT_ID)
+        },
     ];
 
     useEffect(() => {
@@ -129,7 +134,9 @@ const GamePage: React.FC = () => {
                                         style={{
                                             color: "#DC9E36",
                                             border: "1px solid #DC9E36",
-                                            borderRadius: "10px"
+                                            borderRadius: "10px",
+                                            padding: "0",
+                                            width: "100px"
                                         }}
                                         onClick={() => {
                                             const response = getMainScene().setNewPotentialObject(object.id);
@@ -141,11 +148,16 @@ const GamePage: React.FC = () => {
                                             }
                                         }}
                                     >
-                                        <div style={{padding: "5px"}}>
+                                        <div style={{
+                                            padding: "5px",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center"
+                                        }}>
                                             <div style={{fontSize: "12px", fontWeight: "bold"}}>
                                                 ${object.price}
                                             </div>
-                                            <IonIcon slot="icon-only" icon={object.icon}></IonIcon>
+                                            <IonImg src={object.icon} style={{maxWidth: "32px", maxHeight: "32px"}}/>
                                             <div style={{fontSize: "12px", fontWeight: "bold"}}>
                                                 {object.name}
                                             </div>
@@ -201,8 +213,18 @@ const GamePage: React.FC = () => {
                         </IonButton>
 
                         <IonButton fill="clear" size="large" color="dark">
-                            <div>
-                                <IonIcon slot="icon-only" icon={currentObject.icon}></IonIcon>
+                            <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                                <IonImg src={currentObject.icon}
+                                        style={{
+                                            padding: "2px",
+                                            maxWidth: "50px",
+                                            maxHeight: "50px",
+                                            border: "3px solid #fff",
+                                            borderRadius: "3px",
+                                            backgroundColor: "#fff"
+                                        }}
+                                />
+                                {/*<IonIcon slot="icon-only" icon={currentObject.icon}></IonIcon>*/}
                                 <div style={{fontSize: "12px", fontWeight: "bold"}}>
                                     {currentObject.name}
                                 </div>
@@ -288,7 +310,7 @@ const GamePage: React.FC = () => {
     return (
         <IonPage>
             <div style={{position: "fixed", right: "10px", top: "10px", zIndex: "1000"}}>
-                <IonText style={{color: "#DC9E36",fontWeight: "bold"}}>
+                <IonText style={{color: "#DC9E36", fontWeight: "bold"}}>
                     ${money}
                 </IonText>
             </div>

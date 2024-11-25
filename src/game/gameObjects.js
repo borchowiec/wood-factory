@@ -5,6 +5,8 @@ const EAST = 1;
 const SOUTH = 2;
 const WEST = 3;
 
+const DIRECTIONS_TO_DEG = [270, 0, 90, 180];
+
 const CANNOT_BE_PLACED_COLOR = 0xff0000;
 const CAN_BE_PLACED_COLOR = 0x00ff00;
 
@@ -35,87 +37,23 @@ class ConveyorBelt {
         this.gridY = gridY;
         this.scene = scene;
         this.graphics = scene.add.graphics();
+        this.sprite = undefined;
         this.direction = EAST;
         this.isSelected = false;
     }
 
     paint() {
+        if (!this.sprite) {
+            this.sprite = this.scene.add.sprite(this.gridX * TILE_SIZE, this.gridY * TILE_SIZE, "conveyorBelt");
+            this.sprite.play("conveyorBeltAnim", true);
+        }
+
         this.graphics.clear();
+        this.sprite.setX(this.gridX * TILE_SIZE + TILE_SIZE / 2);
+        this.sprite.setY(this.gridY * TILE_SIZE + TILE_SIZE / 2);
+        this.sprite.setRotation(Phaser.Math.DegToRad(DIRECTIONS_TO_DEG[this.direction]));
 
         const tileSize = TILE_SIZE;
-        const margin = tileSize * 0.2;
-
-        if (this.gridX < 0 || this.gridY < 0 || this.gridX >= GRID_WIDTH || this.gridY >= GRID_HEIGHT) {
-            return;
-        }
-
-        let x;
-        let y;
-        let width;
-        let height;
-        if (this.direction === NORTH || this.direction === SOUTH) {
-            x = this.gridX * tileSize + (margin / 2);
-            y = this.gridY * tileSize;
-            width = tileSize - margin;
-            height = tileSize;
-        } else {
-            x = this.gridX * tileSize;
-            y = this.gridY * tileSize + (margin / 2);
-            width = tileSize;
-            height = tileSize - margin;
-        }
-
-        this.graphics.fillStyle(0x2b4454, 1);
-        this.graphics.fillRect(x, y, width, height);
-
-        const triangleMargin = tileSize * 0.2;
-        this.graphics.fillStyle(0x1b2b36, 1);
-        if (this.direction === NORTH) {
-            this.graphics.fillTriangle(
-                this.gridX * tileSize + (margin / 2) + triangleMargin,
-                (this.gridY + 1) * tileSize - triangleMargin,
-
-                (this.gridX + 1) * tileSize - (margin / 2) - triangleMargin,
-                (this.gridY + 1) * tileSize - triangleMargin,
-
-                (this.gridX + 0.5) * tileSize,
-                this.gridY * tileSize + triangleMargin
-            );
-        }
-        else if (this.direction === EAST) {
-            this.graphics.fillTriangle(
-                this.gridX * tileSize + triangleMargin,
-                this.gridY * tileSize + (margin / 2) + triangleMargin,
-
-                this.gridX * tileSize + triangleMargin,
-                (this.gridY + 1) * tileSize - (margin / 2) - triangleMargin,
-
-                (this.gridX + 1) * tileSize - triangleMargin,
-                (this.gridY + 0.5) * tileSize
-            );
-        } else if (this.direction === SOUTH) {
-            this.graphics.fillTriangle(
-                this.gridX * tileSize + (margin / 2) + triangleMargin,
-                this.gridY * tileSize + triangleMargin,
-
-                (this.gridX + 1) * tileSize - (margin / 2) - triangleMargin,
-                this.gridY * tileSize + triangleMargin,
-
-                (this.gridX + 0.5) * tileSize,
-                (this.gridY + 1) * tileSize - triangleMargin
-            );
-        } else if (this.direction === WEST) {
-            this.graphics.fillTriangle(
-                (this.gridX + 1) * tileSize - triangleMargin,
-                this.gridY * tileSize + (margin / 2) + triangleMargin,
-
-                (this.gridX + 1) * tileSize - triangleMargin,
-                (this.gridY + 1) * tileSize - (margin / 2) - triangleMargin,
-
-                this.gridX * tileSize + triangleMargin,
-                (this.gridY + 0.5) * tileSize
-            );
-        }
 
         if (this.isSelected) {
             const lineWidth = 5;
@@ -153,6 +91,11 @@ class ConveyorBelt {
 
     clear() {
         this.graphics.clear();
+
+        if (this.sprite) {
+            this.sprite.destroy();
+            this.sprite = undefined;
+        }
     }
 
     rotate() {

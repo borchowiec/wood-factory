@@ -12,6 +12,7 @@ import {
 } from "ionicons/icons";
 import {CONVEYOR_BELT_ID} from "../game/properties.js";
 import GameObject = Phaser.GameObjects.GameObject;
+import {getPrice} from "../game/gameObjects.js";
 
 enum FooterType {
     ACTIONS,
@@ -25,6 +26,7 @@ type GameObject = {
     id: number;
     name: string;
     icon: string;
+    price: number;
 }
 
 const GamePage: React.FC = () => {
@@ -44,8 +46,8 @@ const GamePage: React.FC = () => {
     };
 
     const gameObjects: GameObject[] = [
-        {id: CONVEYOR_BELT_ID, name: "Conveyor Belt", icon: storefront},
-    ]
+        {id: CONVEYOR_BELT_ID, name: "Conveyor Belt", icon: storefront, price: getPrice(CONVEYOR_BELT_ID)},
+    ];
 
     useEffect(() => {
         const handleLoad = () => {
@@ -77,16 +79,24 @@ const GamePage: React.FC = () => {
         switch (footer) {
             case FooterType.ACTIONS:
                 return (
-                    <div style={{backgroundColor: "black"}}>
+                    <div style={{backgroundColor: "#E4D08E"}}>
                         <IonFooter
                             style={{
                                 display: 'flex',
                                 justifyContent: 'space-around',
                                 padding: '5px'
                             }}>
-                            <IonButton fill="clear" size="large" color="success"
-                                       onClick={() => setFooter(FooterType.SHOP)}>
-                                <IonIcon slot="icon-only" icon={storefront}></IonIcon>
+                            <IonButton
+                                fill="clear"
+                                size="large"
+                                style={{color: "#DC9E36", border: "1px solid #DC9E36", borderRadius: "10px"}}
+                                onClick={() => setFooter(FooterType.SHOP)}>
+                                <div>
+                                    <IonIcon slot="icon-only" icon={storefront}></IonIcon>
+                                    <div style={{fontSize: "12px", fontWeight: "bold"}}>
+                                        Shop
+                                    </div>
+                                </div>
                             </IonButton>
                         </IonFooter>
                     </div>
@@ -98,7 +108,7 @@ const GamePage: React.FC = () => {
                                    onClick={() => setFooter(FooterType.ACTIONS)}>
                             <IonIcon slot="icon-only" icon={backspaceOutline}></IonIcon>
                         </IonButton>
-                        <div style={{backgroundColor: "black"}}>
+                        <div style={{backgroundColor: "#E4D08E"}}>
                             <IonFooter
                                 style={{
                                     display: 'flex',
@@ -106,7 +116,8 @@ const GamePage: React.FC = () => {
                                     padding: '5px'
                                 }}
                             >
-                                <IonButton fill="clear" size="large" color="success"
+                                <IonButton fill="clear" size="large"
+                                           style={{color: "#DC9E36"}}
                                            onClick={() => setShopCurrentPage((shopCurrentPage - 1 + Math.ceil(gameObjects.length / 3)) % Math.ceil(gameObjects.length / 3))}>
                                     <IonIcon slot="icon-only" icon={chevronBackOutline}></IonIcon>
                                 </IonButton>
@@ -115,7 +126,11 @@ const GamePage: React.FC = () => {
                                         key={object.id}
                                         fill="clear"
                                         size="large"
-                                        color="success"
+                                        style={{
+                                            color: "#DC9E36",
+                                            border: "1px solid #DC9E36",
+                                            borderRadius: "10px"
+                                        }}
                                         onClick={() => {
                                             const response = getMainScene().setNewPotentialObject(object.id);
                                             if (response.success) {
@@ -126,7 +141,10 @@ const GamePage: React.FC = () => {
                                             }
                                         }}
                                     >
-                                        <div>
+                                        <div style={{padding: "5px"}}>
+                                            <div style={{fontSize: "12px", fontWeight: "bold"}}>
+                                                ${object.price}
+                                            </div>
                                             <IonIcon slot="icon-only" icon={object.icon}></IonIcon>
                                             <div style={{fontSize: "12px", fontWeight: "bold"}}>
                                                 {object.name}
@@ -134,8 +152,10 @@ const GamePage: React.FC = () => {
                                         </div>
                                     </IonButton>
                                 ))}
-                                <IonButton fill="clear" size="large" color="success"
-                                           onClick={() => setShopCurrentPage((shopCurrentPage + 1) % Math.ceil(gameObjects.length / 3))}>
+                                <IonButton fill="clear" size="large"
+                                           onClick={() => setShopCurrentPage((shopCurrentPage + 1) % Math.ceil(gameObjects.length / 3))}
+                                           style={{color: "#DC9E36"}}
+                                >
                                     <IonIcon slot="icon-only" icon={chevronForwardOutline}></IonIcon>
                                 </IonButton>
                             </IonFooter>
@@ -192,28 +212,28 @@ const GamePage: React.FC = () => {
                 );
             case FooterType.OBJECT_ACTIONS:
                 return (
-                    <div style={{backgroundColor: "black"}}>
+                    <div style={{backgroundColor: "#E4D08E"}}>
                         <IonFooter
                             style={{
                                 display: 'flex',
                                 justifyContent: 'space-around',
                                 padding: '5px'
                             }}>
-                            <IonButton fill="clear" size="large" color="primary"
+                            <IonButton size="large" color="primary"
                                        onClick={() => {
                                            getMainScene().moveSelectedObject();
                                            setFooter(FooterType.MOVING_EXISTING_OBJECT);
                                        }}>
                                 <IonIcon slot="icon-only" icon={moveOutline}></IonIcon>
                             </IonButton>
-                            <IonButton fill="clear" size="large" color="danger"
+                            <IonButton size="large" color="danger"
                                        onClick={() => {
                                            getMainScene().sellSelection();
                                            setFooter(FooterType.ACTIONS);
                                        }}>
                                 <IonIcon slot="icon-only" icon={trashOutline}></IonIcon>
                             </IonButton>
-                            <IonButton fill="clear" size="large" color="dark"
+                            <IonButton size="large" color="dark"
                                        onClick={() => {
                                            getMainScene().cancelSelection();
                                            setFooter(FooterType.ACTIONS);
@@ -268,7 +288,7 @@ const GamePage: React.FC = () => {
     return (
         <IonPage>
             <div style={{position: "fixed", right: "10px", top: "10px", zIndex: "1000"}}>
-                <IonText color="secondary" style={{fontWeight: "bold"}}>
+                <IonText style={{color: "#DC9E36",fontWeight: "bold"}}>
                     ${money}
                 </IonText>
             </div>

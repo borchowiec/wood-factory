@@ -286,6 +286,19 @@ export class MainScene extends Scene {
 
         return getSuccessResponse();
     }
+
+    zoomOut() {
+        this.zoom(-0.4);
+    }
+
+    zoomIn() {
+        this.zoom(0.4);
+    }
+
+    zoom(zoomChange) {
+        this.cameras.main.zoom += zoomChange;
+        this.cameras.main.zoom = Phaser.Math.Clamp(this.cameras.main.zoom, 0.7, 3);
+    }
 }
 
 export function launch() {

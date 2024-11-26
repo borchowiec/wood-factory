@@ -4,10 +4,11 @@ import {Game} from "phaser";
 import {launch, MainScene} from "../game/game.js";
 import "./GamePage.css";
 import {
+    addCircleOutline,
     backspaceOutline,
     checkmarkOutline,
     chevronBackOutline,
-    chevronForwardOutline, closeOutline, moveOutline, refreshOutline,
+    chevronForwardOutline, closeOutline, moveOutline, refreshOutline, removeCircleOutline,
     storefront, trashOutline
 } from "ionicons/icons";
 import {CONVEYOR_BELT_ID} from "../game/properties.js";
@@ -309,6 +310,28 @@ const GamePage: React.FC = () => {
 
     return (
         <IonPage>
+            <div style={{
+                left: "10px",
+                top: "10px",
+                zIndex: "1000",
+                position: "fixed",
+                backgroundColor: "#E4D08E",
+                borderRadius: "20px",
+                padding: "1px 5px",
+            }}>
+                <IonButton fill="clear" size="small"
+                           onClick={() => getMainScene().zoomOut()}
+                           style={{color: "#DC9E36"}}
+                >
+                    <IonIcon slot="icon-only" style={{fontSize: "30px"}} icon={removeCircleOutline}></IonIcon>
+                </IonButton>
+                <IonButton fill="clear" size="small"
+                           onClick={() => getMainScene().zoomIn()}
+                           style={{color: "#DC9E36"}}
+                >
+                    <IonIcon slot="icon-only" style={{fontSize: "30px"}} icon={addCircleOutline}></IonIcon>
+                </IonButton>
+            </div>
             <div style={{position: "fixed", right: "10px", top: "10px", zIndex: "1000"}}>
                 <IonText style={{color: "#DC9E36", fontWeight: "bold"}}>
                     ${money}

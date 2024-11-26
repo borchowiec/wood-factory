@@ -1,4 +1,5 @@
-import {CONVEYOR_BELT_ID, GRID_HEIGHT, GRID_WIDTH, TILE_SIZE} from "./properties.js";
+import {GRID_HEIGHT, GRID_WIDTH, TILE_SIZE} from "./properties.js";
+import {CONVEYOR_BELT_ID} from "../common/GameObjectData.ts";
 
 const NORTH = 0;
 const EAST = 1;

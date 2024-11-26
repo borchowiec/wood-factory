@@ -6,10 +6,7 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { ellipse, square, triangle } from 'ionicons/icons';
-import GamePage from './pages/GamePage';
-import Tab2 from './pages/Tab2';
-import Tab3 from './pages/Tab3';
+import GamePage from './ui/pages/GamePage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';

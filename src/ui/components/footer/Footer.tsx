@@ -1,9 +1,10 @@
 import {ActionsFooter} from "./ActionsFooter";
 import {ShopFooter} from "./ShopFooter";
-import {MainScene} from "../../../game/game.js";
+import {MainScene} from "../../../game/MainScene.js";
 import {GameObjectData} from "../../../common/GameObjectData";
 import {PlacingNewObjectFooter} from "./PlacingNewObjectFooter";
 import {ObjectActionsFooter} from "./ObjectActionsFooter";
+import {MovingExistingObjectFooter} from "./MovingExistingObjectFooter";
 
 export enum FooterType {
     ACTIONS,
@@ -44,9 +45,10 @@ export const getFooter = (
                 mainScene={mainScene}
             />
         case FooterType.MOVING_EXISTING_OBJECT:
-            return <ObjectActionsFooter
+            return <MovingExistingObjectFooter
                 setFooter={setFooter}
                 mainScene={mainScene}
+                showErrorMessage={showErrorMessage}
             />
     }
 }

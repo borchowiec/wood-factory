@@ -2,7 +2,7 @@ import React from "react";
 import {IonButton, IonFooter, IonIcon, IonImg} from "@ionic/react";
 import {checkmarkOutline, closeOutline, refreshOutline} from "ionicons/icons";
 import {FooterType} from "./Footer";
-import {MainScene} from "../../../game/game.js";
+import {MainScene} from "../../../game/MainScene.js";
 import {GameObjectData} from "../../../common/GameObjectData";
 
 export const PlacingNewObjectFooter: React.FC = (

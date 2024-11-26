@@ -2,7 +2,7 @@ import React from "react";
 import {IonButton, IonFooter, IonIcon} from "@ionic/react";
 import {closeOutline, moveOutline, trashOutline} from "ionicons/icons";
 import {FooterType} from "./Footer";
-import {MainScene} from "../../../game/game.js";
+import {MainScene} from "../../../game/MainScene.js";
 import {BaseFooter} from "./BaseFooter";
 
 export const ObjectActionsFooter: React.FC = (

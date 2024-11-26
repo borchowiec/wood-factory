@@ -15,3 +15,5 @@ export const gameObjects: GameObjectData[] = [
         price: 100
     },
 ];
+
+export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

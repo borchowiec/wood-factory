@@ -3,7 +3,7 @@ import {IonButton, IonFooter, IonIcon, IonImg} from "@ionic/react";
 import {backspaceOutline, chevronBackOutline, chevronForwardOutline, storefront} from "ionicons/icons";
 import {FooterType} from "./Footer";
 import {GameObjectData, gameObjects} from "../../../common/GameObjectData";
-import {MainScene} from "../../../game/game.js";
+import {MainScene} from "../../../game/MainScene.js";
 import {BaseFooter} from "./BaseFooter";
 import {LIGHT_COLOR} from "../../Colors";
 

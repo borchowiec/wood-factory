@@ -11,16 +11,6 @@ const DIRECTIONS_TO_DEG = [270, 0, 90, 180];
 const CANNOT_BE_PLACED_COLOR = 0xff0000;
 const CAN_BE_PLACED_COLOR = 0x00ff00;
 
-
-export function getPrice(id) {
-    switch (id) {
-        case CONVEYOR_BELT_ID:
-            return 100;
-        default:
-            return 0;
-    }
-}
-
 export function createObject(id, scene) {
     switch (id) {
         case CONVEYOR_BELT_ID:

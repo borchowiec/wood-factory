@@ -4,6 +4,8 @@ import {backspaceOutline, chevronBackOutline, chevronForwardOutline, storefront}
 import {FooterType} from "./Footer";
 import {GameObjectData, gameObjects} from "../../../common/GameObjectData";
 import {MainScene} from "../../../game/game.js";
+import {BaseFooter} from "./BaseFooter";
+import {LIGHT_COLOR} from "../../Colors";
 
 export const ShopFooter: React.FC = (
     {setFooter, setCurrentObject, showErrorMessage, mainScene}:
@@ -22,65 +24,57 @@ export const ShopFooter: React.FC = (
                        onClick={() => setFooter(FooterType.ACTIONS)}>
                 <IonIcon slot="icon-only" icon={backspaceOutline}></IonIcon>
             </IonButton>
-            <div style={{backgroundColor: "#E4D08E"}}>
-                <IonFooter
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-around',
-                        padding: '5px'
-                    }}
-                >
-                    <IonButton fill="clear" size="large"
-                               style={{color: "#DC9E36"}}
-                               onClick={() => setShopCurrentPage((shopCurrentPage - 1 + Math.ceil(gameObjects.length / 3)) % Math.ceil(gameObjects.length / 3))}>
-                        <IonIcon slot="icon-only" icon={chevronBackOutline}></IonIcon>
-                    </IonButton>
-                    {gameObjects.slice(shopCurrentPage * 3, shopCurrentPage * 3 + 3).map(object => (
-                        <IonButton
-                            key={object.id}
-                            fill="clear"
-                            size="large"
-                            style={{
-                                color: "#DC9E36",
-                                border: "1px solid #DC9E36",
-                                borderRadius: "10px",
-                                padding: "0",
-                                width: "100px"
-                            }}
-                            onClick={() => {
-                                const response = mainScene.setNewPotentialObject(object.id);
-                                if (response.success) {
-                                    setCurrentObject(object);
-                                    setFooter(FooterType.PLACING_NEW_OBJECT);
-                                } else {
-                                    showErrorMessage(response.message);
-                                }
-                            }}
-                        >
-                            <div style={{
-                                padding: "5px",
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center"
-                            }}>
-                                <div style={{fontSize: "12px", fontWeight: "bold"}}>
-                                    ${object.price}
-                                </div>
-                                <IonImg src={object.icon} style={{maxWidth: "32px", maxHeight: "32px"}}/>
-                                <div style={{fontSize: "12px", fontWeight: "bold"}}>
-                                    {object.name}
-                                </div>
-                            </div>
-                        </IonButton>
-                    ))}
-                    <IonButton fill="clear" size="large"
-                               onClick={() => setShopCurrentPage((shopCurrentPage + 1) % Math.ceil(gameObjects.length / 3))}
-                               style={{color: "#DC9E36"}}
+            <BaseFooter>
+                <IonButton fill="clear" size="large"
+                           style={{color: LIGHT_COLOR}}
+                           onClick={() => setShopCurrentPage((shopCurrentPage - 1 + Math.ceil(gameObjects.length / 3)) % Math.ceil(gameObjects.length / 3))}>
+                    <IonIcon slot="icon-only" icon={chevronBackOutline}></IonIcon>
+                </IonButton>
+                {gameObjects.slice(shopCurrentPage * 3, shopCurrentPage * 3 + 3).map(object => (
+                    <IonButton
+                        key={object.id}
+                        fill="clear"
+                        size="large"
+                        style={{
+                            color: LIGHT_COLOR,
+                            border: `1px solid ${LIGHT_COLOR}`,
+                            borderRadius: "10px",
+                            padding: "0",
+                            width: "100px"
+                        }}
+                        onClick={() => {
+                            const response = mainScene.setNewPotentialObject(object.id);
+                            if (response.success) {
+                                setCurrentObject(object);
+                                setFooter(FooterType.PLACING_NEW_OBJECT);
+                            } else {
+                                showErrorMessage(response.message);
+                            }
+                        }}
                     >
-                        <IonIcon slot="icon-only" icon={chevronForwardOutline}></IonIcon>
+                        <div style={{
+                            padding: "5px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center"
+                        }}>
+                            <div style={{fontSize: "12px", fontWeight: "bold"}}>
+                                ${object.price}
+                            </div>
+                            <IonImg src={object.icon} style={{maxWidth: "32px", maxHeight: "32px"}}/>
+                            <div style={{fontSize: "12px", fontWeight: "bold"}}>
+                                {object.name}
+                            </div>
+                        </div>
                     </IonButton>
-                </IonFooter>
-            </div>
+                ))}
+                <IonButton fill="clear" size="large"
+                           onClick={() => setShopCurrentPage((shopCurrentPage + 1) % Math.ceil(gameObjects.length / 3))}
+                           style={{color: LIGHT_COLOR}}
+                >
+                    <IonIcon slot="icon-only" icon={chevronForwardOutline}></IonIcon>
+                </IonButton>
+            </BaseFooter>
         </>
     )
 }

@@ -118,7 +118,12 @@ class ConveyorBelt {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
 
-            if (Phaser.Geom.Rectangle.Overlaps(item.getDetectionZone(), this.detectionZone)) {
+            let detectionZones = item.getDetectionZones();
+            for (let j = 0; j < detectionZones.length; j++) {
+                const detectionZone = detectionZones[j];
+                if (!Phaser.Geom.Rectangle.Overlaps(detectionZone, this.detectionZone)) {
+                    continue;
+                }
                 let newX = item.x;
                 let newY = item.y;
 
@@ -133,6 +138,7 @@ class ConveyorBelt {
                 }
 
                 item.moveTo(newX, newY);
+                break;
             }
         }
     }

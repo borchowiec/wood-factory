@@ -10,7 +10,7 @@ import {
 import {paintTerrain} from "./terrainPainter.js";
 import {getGameObjectById} from "../common/GameObjectData";
 import {createObject} from "./gameObjects.js";
-import {LogItem} from "./gameItems.js";
+import {LogItem} from "./gameItems.ts";
 
 function getSuccessResponse() {
     return {success: true};

@@ -1,3 +1,6 @@
+export const DEBUG_DEPTH = 1000;
+export const ITEM_DEPTH = 500;
+
 export const DEBUG = true;
 
 export const TILE_SIZE = 64;

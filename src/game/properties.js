@@ -1,3 +1,5 @@
+export const DEBUG = true;
+
 export const TILE_SIZE = 64;
 export const GRID_WIDTH = 30;
 export const GRID_HEIGHT = 20;

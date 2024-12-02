@@ -1,4 +1,4 @@
-import {GRID_HEIGHT, GRID_WIDTH, TILE_SIZE} from "./properties.js";
+import {DEBUG, GRID_HEIGHT, GRID_WIDTH, TILE_SIZE} from "./properties.js";
 import {CONVEYOR_BELT_ID} from "../common/GameObjectData.ts";
 
 const NORTH = 0;
@@ -31,9 +31,19 @@ class ConveyorBelt {
         this.sprite = undefined;
         this.direction = EAST;
         this.isSelected = false;
+
+        this.detectionZone = new Phaser.Geom.Rectangle(
+            0,
+            0,
+            0,
+            0
+        );
+        this.updateDetectionZone();
     }
 
     paint() {
+        this.updateDetectionZone();
+
         if (!this.sprite) {
             this.sprite = this.scene.add.sprite(this.gridX * TILE_SIZE, this.gridY * TILE_SIZE, "conveyorBelt");
             this.sprite.play("conveyorBeltAnim", true);
@@ -55,6 +65,11 @@ class ConveyorBelt {
                 tileSize + 2 * lineWidth,
                 tileSize + 2 * lineWidth
             );
+        }
+
+        if (DEBUG) {
+            this.graphics.fillStyle(0x00ff00, 1);
+            this.graphics.strokeRectShape(this.detectionZone);
         }
 
         if (this.scene.grid[this.gridX][this.gridY] === this) {
@@ -91,9 +106,49 @@ class ConveyorBelt {
 
     rotate() {
         this.direction = (this.direction + 1) % 4;
+        this.updateDetectionZone();
     }
 
     setSelected(selected) {
         this.isSelected = selected;
+    }
+
+    update(items) {
+        const moveValue = 0.5;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+
+            if (Phaser.Geom.Rectangle.Overlaps(item.getDetectionZone(), this.detectionZone)) {
+                let newX = item.x;
+                let newY = item.y;
+
+                if (this.direction === NORTH) {
+                    newY -= moveValue;
+                } else if (this.direction === EAST) {
+                    newX += moveValue;
+                } else if (this.direction === SOUTH) {
+                    newY += moveValue;
+                } else if (this.direction === WEST) {
+                    newX -= moveValue;
+                }
+
+                item.moveTo(newX, newY);
+            }
+        }
+    }
+
+    updateDetectionZone() {
+        const detectionZoneSize = TILE_SIZE / 2;
+        if (this.direction === NORTH || this.direction === SOUTH) {
+            this.detectionZone.width = detectionZoneSize;
+            this.detectionZone.height = TILE_SIZE;
+            this.detectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE / 2 - detectionZoneSize / 2;
+            this.detectionZone.y = this.gridY * TILE_SIZE;
+        } else {
+            this.detectionZone.width = TILE_SIZE;
+            this.detectionZone.height = detectionZoneSize;
+            this.detectionZone.x = this.gridX * TILE_SIZE;
+            this.detectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE / 2 - detectionZoneSize / 2;
+        }
     }
 }

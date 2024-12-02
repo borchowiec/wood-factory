@@ -10,6 +10,7 @@ import {
 import {paintTerrain} from "./terrainPainter.js";
 import {getGameObjectById} from "../common/GameObjectData";
 import {createObject} from "./gameObjects.js";
+import {LogItem} from "./gameItems.js";
 
 function getSuccessResponse() {
     return {success: true};
@@ -30,6 +31,7 @@ export class MainScene extends Scene {
         this.tempExistingObject = null;
         this.selectedObject = null;
         this.longPressTimer = null;
+        this.items = null;
 
         this.setMoney(10000);
     }
@@ -56,6 +58,14 @@ export class MainScene extends Scene {
 
         this.initializeGrid(gridWidth, gridHeight);
 
+        this.items = [];
+        this.items.push(new LogItem(100, 100, this));
+        this.items.push(new LogItem(200, 110, this));
+        this.items.push(new LogItem(300, 120, this));
+        this.items.push(new LogItem(400, 130, this));
+        this.items.forEach(item => item.paint());
+
+        this.newPlacableObject = null;
         this.anims.create({
             key: 'conveyorBeltAnim',
             frames: this.anims.generateFrameNumbers('conveyorBelt', {frames: [0, 1, 2, 3]}),
@@ -161,6 +171,13 @@ export class MainScene extends Scene {
     }
 
     update() {
+        this.grid.forEach(row => {
+            row.forEach(object => {
+                if (object) {
+                    object.update(this.items);
+                }
+            })
+        })
     }
 
     setNewPotentialObject(id) {

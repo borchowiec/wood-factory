@@ -1,5 +1,7 @@
 export const DEBUG_DEPTH = 1000;
 export const ITEM_DEPTH = 500;
+export const OBJECT_DEPTH = 200;
+export const OBJECT_SELECTION_DEPTH = OBJECT_DEPTH + 10;
 
 export const DEBUG = true;
 

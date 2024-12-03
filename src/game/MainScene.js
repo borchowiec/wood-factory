@@ -139,8 +139,7 @@ export class MainScene extends Scene {
             return;
         }
 
-        object.gridX = tileX;
-        object.gridY = tileY;
+        object.move(tileX, tileY);
         object.paint();
     }
 
@@ -260,13 +259,12 @@ export class MainScene extends Scene {
         if (this.selectedObject) {
             this.selectedObject.setSelected(false);
             this.tempExistingObject = this.selectedObject;
-            this.movingObject = Object.assign(Object.create(Object.getPrototypeOf(this.selectedObject)), this.selectedObject);
+            this.movingObject = this.selectedObject.copy();
             this.selectedObject = null;
 
             this.grid[this.tempExistingObject.gridX][this.tempExistingObject.gridY] = null;
 
-            this.tempExistingObject.clear();
-            this.movingObject.clear();
+            this.tempExistingObject.setVisible(false);
             this.movingObject.paint();
         }
     }
@@ -284,6 +282,7 @@ export class MainScene extends Scene {
             this.movingObject = null;
 
             this.grid[this.tempExistingObject.gridX][this.tempExistingObject.gridY] = this.tempExistingObject;
+            this.tempExistingObject.setVisible(true);
             this.tempExistingObject.paint();
             this.tempExistingObject = null;
         }

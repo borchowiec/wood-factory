@@ -8,6 +8,8 @@ export abstract class GameItem {
     abstract getDetectionZones(): Phaser.Geom.Rectangle[];
     abstract clear(): void;
     abstract moveTo(x: number, y: number): void;
+    abstract getX(): number;
+    abstract getY(): number;
 }
 
 abstract class BasicItem extends GameItem {
@@ -78,7 +80,7 @@ abstract class BasicItem extends GameItem {
             this.debugGraphics.x = this.x;
             this.debugGraphics.y = this.y;
             this.debugGraphics.setDepth(DEBUG_DEPTH);
-            this.debugGraphics.fillStyle(0x00ff00, 1);
+            this.debugGraphics.lineStyle(1, 0xffff00, 1);
             this.getDetectionZones().forEach(detectionZone => {
                 this.debugGraphics.strokeRect(
                     detectionZone.x - this.x,
@@ -93,6 +95,14 @@ abstract class BasicItem extends GameItem {
     clear() {
         this.debugGraphics.clear();
         this.image.destroy();
+    }
+
+    getX(): number {
+        return this.x;
+    }
+
+    getY(): number {
+        return this.y;
     }
 }
 

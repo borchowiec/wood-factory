@@ -1,5 +1,6 @@
 import {DEBUG, GRID_HEIGHT, GRID_WIDTH, TILE_SIZE} from "./properties.js";
 import {CONVEYOR_BELT_ID} from "../common/GameObjectData.ts";
+import {GameItem} from "./gameItems";
 
 const NORTH = 0;
 const EAST = 1;
@@ -11,18 +12,37 @@ const DIRECTIONS_TO_DEG = [270, 0, 90, 180];
 const CANNOT_BE_PLACED_COLOR = 0xff0000;
 const CAN_BE_PLACED_COLOR = 0x00ff00;
 
+export abstract class GameObject {
+    abstract getId(): number;
+    abstract paint(): void;
+    abstract canBePlaced(): boolean;
+    abstract clear(): void;
+    abstract rotate(): void;
+    abstract setSelected(selected: boolean): void;
+    abstract update(items: GameItem[]): void;
+}
+
+
+
 export function createObject(id, scene) {
     switch (id) {
         case CONVEYOR_BELT_ID:
             return new ConveyorBelt(-1, -1, scene);
-        default:
-            return null;
     }
 }
 
-class ConveyorBelt {
+class ConveyorBelt extends GameObject {
+    gridX: number;
+    gridY: number;
+    scene: Phaser.Scene;
+    graphics: Phaser.GameObjects.Graphics;
+    sprite: Phaser.GameObjects.Sprite | undefined;
+    direction: number;
+    detectionZone: Phaser.Geom.Rectangle;
+    isSelected: boolean;
+
     constructor(gridX, gridY, scene) {
-        this.id = CONVEYOR_BELT_ID;
+        super();
 
         this.gridX = gridX;
         this.gridY = gridY;
@@ -39,6 +59,10 @@ class ConveyorBelt {
             0
         );
         this.updateDetectionZone();
+    }
+
+    getId(): number {
+        return CONVEYOR_BELT_ID;
     }
 
     paint() {

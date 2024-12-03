@@ -9,7 +9,7 @@ import {
 } from "./properties.js";
 import {paintTerrain} from "./terrainPainter.js";
 import {getGameObjectById} from "../common/GameObjectData";
-import {createObject} from "./gameObjects.js";
+import {createObject} from "./gameObjects.ts";
 import {LogItem} from "./gameItems.ts";
 
 function getSuccessResponse() {
@@ -202,7 +202,7 @@ export class MainScene extends Scene {
             return getErrorResponse("No object to place");
         }
 
-        const price = getGameObjectById(this.newPlacableObject.id).price;
+        const price = getGameObjectById(this.newPlacableObject.getId()).price;
         if (price > this.money) {
             return getErrorResponse("Not enough money");
         }
@@ -246,7 +246,7 @@ export class MainScene extends Scene {
 
     sellSelection() {
         if (this.selectedObject) {
-            const price = Math.ceil(getGameObjectById(this.selectedObject.id).price * SELL_PRICE);
+            const price = Math.ceil(getGameObjectById(this.selectedObject.getId()).price * SELL_PRICE);
 
             this.selectedObject.clear();
             this.grid[this.selectedObject.gridX][this.selectedObject.gridY] = null;

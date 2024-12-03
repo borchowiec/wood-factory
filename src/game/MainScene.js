@@ -46,6 +46,8 @@ export class MainScene extends Scene {
             frameWidth: 64,
             frameHeight: 64
         });
+
+        this.load.image('log', 'assets/items/log.png');
     }
 
     create() {

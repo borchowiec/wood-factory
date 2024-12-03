@@ -18,22 +18,28 @@ abstract class BasicItem extends GameItem {
     verticalDetectionZone: Phaser.Geom.Rectangle;
     horizontalDetectionZone: Phaser.Geom.Rectangle;
     debugGraphics: Phaser.GameObjects.Graphics;
+    image: Phaser.GameObjects.Image;
 
-    protected constructor(x, y, width, height, scene: Phaser.Scene) {
+    protected constructor(x, y, imageName, scene: Phaser.Scene) {
         super();
-        this.width = width;
-        this.height = height;
+
+        this.image = scene.add.image(x, y, imageName);
+        this.image.setOrigin(0, 0);
+        this.image.setDepth(ITEM_DEPTH);
+
+        this.width = this.image.width;
+        this.height = this.image.height;
         this.x = x;
         this.y = y;
         this.verticalDetectionZone = new Phaser.Geom.Rectangle(
-            x + (width - DETECTOR_SIZE) / 2,
+            x + (this.width - DETECTOR_SIZE) / 2,
             y,
             DETECTOR_SIZE,
             this.height
         );
         this.horizontalDetectionZone = new Phaser.Geom.Rectangle(
             x,
-            y + (height - DETECTOR_SIZE) / 2,
+            y + (this.height - DETECTOR_SIZE) / 2,
             this.width,
             DETECTOR_SIZE
         );
@@ -58,6 +64,12 @@ abstract class BasicItem extends GameItem {
         this.horizontalDetectionZone.y = y + (this.height - DETECTOR_SIZE) / 2;
         this.horizontalDetectionZone.width = this.width;
         this.horizontalDetectionZone.height = DETECTOR_SIZE;
+
+        this.image.x = x;
+        this.image.y = y;
+
+        this.debugGraphics.x = this.x;
+        this.debugGraphics.y = this.y;
     }
 
     paint() {
@@ -77,40 +89,15 @@ abstract class BasicItem extends GameItem {
             });
         }
     }
+
+    clear() {
+        this.debugGraphics.clear();
+        this.image.destroy();
+    }
 }
 
 export class LogItem extends BasicItem {
-    graphics: Phaser.GameObjects.Graphics;
-
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, 50, 50, scene);
-        this.graphics = scene.add.graphics();
-    }
-
-    paint() {
-        super.paint();
-
-        this.graphics.clear();
-        this.graphics.x = this.x;
-        this.graphics.y = this.y;
-
-        this.graphics.setDepth(ITEM_DEPTH);
-        this.graphics.fillStyle(0xff0000, 1);
-        this.graphics.fillRect(0, 0, 50, 50);
-    }
-
-    clear() {
-        this.graphics.clear();
-        this.debugGraphics.clear();
-    }
-
-    moveTo(x: number, y: number) {
-        super.moveTo(x, y);
-
-        this.graphics.x = x;
-        this.graphics.y = y;
-
-        this.debugGraphics.x = this.x;
-        this.debugGraphics.y = this.y;
+        super(x, y, "log", scene);
     }
 }

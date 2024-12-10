@@ -42,9 +42,9 @@ export const gameObjects: GameObjectData[] = [
         name: "Conveyor Belt (Left)",
         price: 100,
         imageData: {
-            icon: "assets/objects/conveyor-belt/icon.png",
+            icon: "assets/objects/conveyor-belt-left/icon.png",
             spriteName: "conveyorBeltLeft",
-            spritePath: "assets/objects/conveyor-belt/sprite.png",
+            spritePath: "assets/objects/conveyor-belt-left/sprite.png",
             spriteFrameWidth: 64,
             spriteFrameHeight: 64,
             spriteAnimationName: "conveyorBeltLeftAnim",
@@ -58,9 +58,9 @@ export const gameObjects: GameObjectData[] = [
         name: "Conveyor Belt (Right)",
         price: 100,
         imageData: {
-            icon: "assets/objects/conveyor-belt/icon.png",
+            icon: "assets/objects/conveyor-belt-right/icon.png",
             spriteName: "conveyorBeltRight",
-            spritePath: "assets/objects/conveyor-belt/sprite.png",
+            spritePath: "assets/objects/conveyor-belt-right/sprite.png",
             spriteFrameWidth: 64,
             spriteFrameHeight: 64,
             spriteAnimationName: "conveyorBeltRightAnim",

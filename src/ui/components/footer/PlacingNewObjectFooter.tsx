@@ -52,17 +52,21 @@ export const PlacingNewObjectFooter: React.FC = (
 
             <IonButton fill="clear" size="large" color="dark">
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-                    <IonImg src={currentObject.icon}
-                            style={{
-                                padding: "2px",
-                                maxWidth: "50px",
-                                maxHeight: "50px",
-                                border: "3px solid #fff",
-                                borderRadius: "3px",
-                                backgroundColor: "#fff"
-                            }}
-                    />
-                    {/*<IonIcon slot="icon-only" icon={currentObject.icon}></IonIcon>*/}
+                    <div style={{
+                        border: "3px solid #fff",
+                        borderRadius: "3px",
+                        backgroundColor: "#fff",
+                        padding: "2px",
+                        width: "60px",
+                        height: "60px"
+                    }}>
+                        <img src={currentObject.imageData.icon}
+                             style={{
+                                 maxWidth: "50px",
+                                 maxHeight: "50px"
+                             }}
+                        />
+                    </div>
                     <div style={{fontSize: "12px", fontWeight: "bold"}}>
                         {currentObject.name}
                     </div>

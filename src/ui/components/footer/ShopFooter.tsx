@@ -61,7 +61,7 @@ export const ShopFooter: React.FC = (
                             <div style={{fontSize: "12px", fontWeight: "bold"}}>
                                 ${object.price}
                             </div>
-                            <IonImg src={object.icon} style={{maxWidth: "32px", maxHeight: "32px"}}/>
+                            <img src={object.imageData.icon} style={{maxWidth: "32px", maxHeight: "32px"}}/>
                             <div style={{fontSize: "12px", fontWeight: "bold"}}>
                                 {object.name}
                             </div>

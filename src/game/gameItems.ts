@@ -1,15 +1,18 @@
 import {DEBUG, DEBUG_DEPTH, ITEM_DEPTH, TILE_SIZE} from "./properties.js";
 import * as Phaser from "phaser";
+import * as Phaser from "phaser";
 
 const DETECTOR_SIZE = TILE_SIZE / 10;
 
 export abstract class GameItem {
+    abstract getPrice(): number;
     abstract paint(): void;
     abstract getDetectionZones(): Phaser.Geom.Rectangle[];
     abstract clear(): void;
     abstract moveTo(x: number, y: number): void;
     abstract getX(): number;
     abstract getY(): number;
+    abstract areDetectionZonesOverlapping(gameItem: GameItem): boolean;
 }
 
 abstract class BasicItem extends GameItem {
@@ -104,10 +107,27 @@ abstract class BasicItem extends GameItem {
     getY(): number {
         return this.y;
     }
+
+    areDetectionZonesOverlapping(gameItem: GameItem): boolean {
+        for (let i = 0; i < this.getDetectionZones().length; i++) {
+            const thisDetectionZone = this.getDetectionZones()[i];
+            for (let j = 0; j < gameItem.getDetectionZones().length; j++) {
+                const gameItemDetectionZone = gameItem.getDetectionZones()[j];
+                if (Phaser.Geom.Intersects.RectangleToRectangle(thisDetectionZone, gameItemDetectionZone)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 
 export class LogItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
         super(x, y, "log", scene);
+    }
+
+    getPrice(): number {
+        return 10;
     }
 }

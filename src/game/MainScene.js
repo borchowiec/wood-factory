@@ -8,7 +8,7 @@ import {
     TILE_SIZE
 } from "./properties.js";
 import {paintTerrain} from "./terrainPainter.js";
-import {getGameObjectById} from "../common/GameObjectData";
+import {gameObjects, getGameObjectById} from "../common/GameObjectData";
 import {createObject} from "./gameObjects.ts";
 import {LogItem} from "./gameItems.ts";
 
@@ -33,7 +33,7 @@ export class MainScene extends Scene {
         this.longPressTimer = null;
         this.items = null;
 
-        this.setMoney(10000);
+        this.setMoney(100000);
     }
 
     preload() {
@@ -41,6 +41,13 @@ export class MainScene extends Scene {
             'assets/terrain_atlas.png',
             {frameWidth: SPRITE_FRAME_SIZE, frameHeight: SPRITE_FRAME_SIZE}
         );
+
+        gameObjects.forEach(gameObject => {
+            this.load.spritesheet(gameObject.imageData.spriteName, gameObject.imageData.spritePath, {
+                frameWidth: gameObject.imageData.spriteFrameWidth,
+                frameHeight: gameObject.imageData.spriteFrameHeight
+            });
+        });
 
         this.load.spritesheet('conveyorBelt', 'assets/objects/conveyor-belt/sprite.png', {
             frameWidth: 64,
@@ -61,19 +68,18 @@ export class MainScene extends Scene {
         this.initializeGrid(gridWidth, gridHeight);
 
         this.items = [];
-        this.items.push(new LogItem(100, 100, this));
-        this.items.push(new LogItem(200, 110, this));
-        this.items.push(new LogItem(300, 120, this));
-        this.items.push(new LogItem(400, 130, this));
-        this.items.forEach(item => item.paint());
 
         this.newPlacableObject = null;
-        this.anims.create({
-            key: 'conveyorBeltAnim',
-            frames: this.anims.generateFrameNumbers('conveyorBelt', {frames: [0, 1, 2, 3]}),
-            frameRate: 10,
-            repeat: -1
-        });
+        gameObjects.forEach(gameObject => {
+            this.anims.create({
+                key: gameObject.imageData.spriteAnimationName,
+                frames: this.anims.generateFrameNumbers(
+                    gameObject.imageData.spriteName,
+                    {frames: gameObject.imageData.spriteAnimationFrames}),
+                frameRate: gameObject.imageData.spriteAnimationRate,
+                repeat: -1
+            });
+        })
     }
 
     initializeCamera(tileSize, gridWidth, gridHeight) {
@@ -119,7 +125,7 @@ export class MainScene extends Scene {
         this.input.on('pointerup', () => {
             this.isDragging = false;
             if (this.longPressTimer) {
-                this.longPressTimer.remove(false); // Cancel the timer
+                this.longPressTimer.remove(false);
                 this.longPressTimer = null;
             }
         });
@@ -172,13 +178,38 @@ export class MainScene extends Scene {
     }
 
     update() {
-        this.grid.forEach(row => {
-            row.forEach(object => {
-                if (object) {
-                    object.update(this.items);
+        for (let gridX = 0; gridX < GRID_WIDTH; gridX++) {
+            for (let gridY = 0; gridY < GRID_HEIGHT; gridY++) {
+                let gridObject = this.grid[gridX][gridY];
+                if (gridObject && gridObject.gridX === gridX && gridObject.gridY === gridY) {
+                    gridObject.update(this.items);
                 }
-            })
-        })
+            }
+        }
+
+        const riverSpeed = 1;
+        for (let i = this.items.length - 1; i >= 0; i--) {
+            const item = this.items[i];
+            if (item.getY() >= 0) {
+                continue;
+            }
+
+            let newY = item.getY();
+            let newX = item.getX();
+            if (item.getY() > -TILE_SIZE) {
+                newY -= riverSpeed;
+            }
+            if (item.getY() < -TILE_SIZE * 0.8) {
+                newX -= riverSpeed;
+            }
+            item.moveTo(newX, newY);
+
+            if (item.getX() < -TILE_SIZE*2) {
+                this.items.splice(i, 1);
+                item.clear();
+                this.setMoney(this.money + item.getPrice());
+            }
+        }
     }
 
     setNewPotentialObject(id) {
@@ -210,7 +241,7 @@ export class MainScene extends Scene {
             return getErrorResponse("Cannot place the object here");
         }
 
-        this.grid[this.newPlacableObject.gridX][this.newPlacableObject.gridY] = this.newPlacableObject;
+        this.newPlacableObject.placeOnGrid();
         this.newPlacableObject.paint();
         this.newPlacableObject = null;
 
@@ -247,8 +278,8 @@ export class MainScene extends Scene {
         if (this.selectedObject) {
             const price = Math.ceil(getGameObjectById(this.selectedObject.getId()).price * SELL_PRICE);
 
+            this.selectedObject.removeFromGrid();
             this.selectedObject.clear();
-            this.grid[this.selectedObject.gridX][this.selectedObject.gridY] = null;
             this.selectedObject = null;
 
             this.setMoney(this.money + price);
@@ -262,8 +293,7 @@ export class MainScene extends Scene {
             this.movingObject = this.selectedObject.copy();
             this.selectedObject = null;
 
-            this.grid[this.tempExistingObject.gridX][this.tempExistingObject.gridY] = null;
-
+            this.tempExistingObject.removeFromGrid();
             this.tempExistingObject.setVisible(false);
             this.movingObject.paint();
         }
@@ -281,7 +311,7 @@ export class MainScene extends Scene {
             this.movingObject.clear();
             this.movingObject = null;
 
-            this.grid[this.tempExistingObject.gridX][this.tempExistingObject.gridY] = this.tempExistingObject;
+            this.tempExistingObject.placeOnGrid();
             this.tempExistingObject.setVisible(true);
             this.tempExistingObject.paint();
             this.tempExistingObject = null;
@@ -297,7 +327,7 @@ export class MainScene extends Scene {
             return getErrorResponse("Cannot place the object here");
         }
 
-        this.grid[this.movingObject.gridX][this.movingObject.gridY] = this.movingObject;
+        this.movingObject.placeOnGrid();
         this.movingObject.paint();
         this.movingObject = null;
         this.tempExistingObject = null;

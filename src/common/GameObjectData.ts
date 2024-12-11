@@ -74,7 +74,7 @@ export const gameObjects: GameObjectData[] = [
         name: "Log Producer",
         price: 5000,
         imageData: {
-            icon: "assets/objects/log-producer/icon.png",
+            icon: "assets/objects/log-producer/sprite.png",
             spriteName: "logProducer",
             spritePath: "assets/objects/log-producer/sprite.png",
             spriteFrameWidth: 64,

@@ -55,4 +55,5 @@ conveyer belt: 100
 turned conveyer belt: 100
 sorter: 500
 splitter: 500
+merger: 500
 storage: 1500

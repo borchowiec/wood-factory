@@ -12,6 +12,7 @@ export type GameObjectData = {
         spriteAnimationRate: number;
         spriteAnimationFrames: number[];
     },
+    upgrades: {price: number, details: object}[];
     metaData: object;
 }
 
@@ -19,6 +20,13 @@ export const CONVEYOR_BELT_ID = 0;
 export const CONVEYOR_BELT_LEFT_ID = 1;
 export const CONVEYOR_BELT_RIGHT_ID = 2;
 export const LOG_PRODUCER_ID = 3;
+
+const conveyorBeltUpgrades = [
+    {price: 0, details: {speed: 0.25}},
+    {price: 50, details: {speed: 0.50}},
+    {price: 125, details: {speed: 1}},
+    {price: 200, details: {speed: 2}}
+]
 
 export const gameObjects: GameObjectData[] = [
     {
@@ -35,7 +43,8 @@ export const gameObjects: GameObjectData[] = [
             spriteAnimationRate: 10,
             spriteAnimationFrames: [0, 1, 2, 3],
         },
-        metaData: {}
+        metaData: {},
+        upgrades: conveyorBeltUpgrades,
     },
     {
         id: CONVEYOR_BELT_LEFT_ID,
@@ -51,7 +60,8 @@ export const gameObjects: GameObjectData[] = [
             spriteAnimationRate: 10,
             spriteAnimationFrames: [0, 1, 2, 3],
         },
-        metaData: {}
+        metaData: {},
+        upgrades: conveyorBeltUpgrades,
     },
     {
         id: CONVEYOR_BELT_RIGHT_ID,
@@ -67,7 +77,8 @@ export const gameObjects: GameObjectData[] = [
             spriteAnimationRate: 10,
             spriteAnimationFrames: [0, 1, 2, 3],
         },
-        metaData: {}
+        metaData: {},
+        upgrades: conveyorBeltUpgrades,
     },
     {
         id: LOG_PRODUCER_ID,
@@ -83,9 +94,12 @@ export const gameObjects: GameObjectData[] = [
             spriteAnimationRate: 10,
             spriteAnimationFrames: [0]
         },
-        metaData: {
-            productionTimeMs: 10000,
-        }
+        metaData: {},
+        upgrades: [
+            {price: 0, details: {productionTimeMs: 10000}},
+            {price: 2000, details: {productionTimeMs: 5000}},
+            {price: 4000, details: {productionTimeMs: 2500}}
+        ],
     },
 ];
 

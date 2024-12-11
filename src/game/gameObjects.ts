@@ -66,6 +66,11 @@ export abstract class GameObject {
     abstract removeFromGrid(): void;
 
     abstract copy(): GameObject;
+
+    abstract isMaxLevel(): boolean;
+    abstract getUpgradePrice(): number;
+    abstract getCurrentLevel(): number;
+    abstract setLevel(level: number);
 }
 
 abstract class BasicObject extends GameObject {
@@ -85,6 +90,8 @@ abstract class BasicObject extends GameObject {
 
     tileOffsets: { gridX: number; gridY: number }[];
 
+    currentLevel: number;
+
     constructor(gridX, gridY, scene, tileOffsets = [{gridX: 0, gridY: 0}]) {
         super();
 
@@ -93,6 +100,7 @@ abstract class BasicObject extends GameObject {
         this.scene = scene;
         this.isVisible = true;
         this.tileOffsets = tileOffsets;
+        this.currentLevel = 1;
 
         const gameObjectData = getGameObjectById(this.getId());
 
@@ -298,6 +306,26 @@ abstract class BasicObject extends GameObject {
             this.scene.grid[gridX][gridY] = null;
         }
     }
+
+    isMaxLevel(): boolean {
+        return this.currentLevel >= getGameObjectById(this.getId()).upgrades.length;
+    }
+
+    getUpgradePrice(): number {
+        return getGameObjectById(this.getId()).upgrades[this.currentLevel].price;
+    }
+
+    setLevel(level: number) {
+        this.currentLevel = level;
+        this.upgrade(getGameObjectById(this.getId()).upgrades[this.currentLevel-1].details);
+    }
+
+
+    getCurrentLevel(): number {
+        return this.currentLevel;
+    }
+
+    abstract upgrade(details: object);
 }
 
 class ConveyorBelt extends BasicObject {
@@ -307,6 +335,7 @@ class ConveyorBelt extends BasicObject {
         0,
         0
     );
+    speed: number;
 
     constructor(gridX, gridY, scene) {
         super(
@@ -314,6 +343,7 @@ class ConveyorBelt extends BasicObject {
             gridY,
             scene
         );
+        this.speed = getGameObjectById(this.getId()).upgrades[0].details.speed;
     }
 
     getId(): number {
@@ -356,7 +386,6 @@ class ConveyorBelt extends BasicObject {
     }
 
     update(items) {
-        const moveValue = 0.5;
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
 
@@ -381,17 +410,21 @@ class ConveyorBelt extends BasicObject {
             let newY = item.getY();
 
             if (this.direction === NORTH) {
-                newY -= moveValue;
+                newY -= this.speed;
             } else if (this.direction === EAST) {
-                newX += moveValue;
+                newX += this.speed;
             } else if (this.direction === SOUTH) {
-                newY += moveValue;
+                newY += this.speed;
             } else if (this.direction === WEST) {
-                newX -= moveValue;
+                newX -= this.speed;
             }
 
             item.moveTo(newX, newY);
         }
+    }
+
+    upgrade(details: object) {
+        this.speed = details.speed;
     }
 }
 
@@ -408,6 +441,7 @@ class ConveyorBeltLeft extends BasicObject {
         0,
         0
     );
+    speed: number;
 
     constructor(gridX, gridY, scene) {
         super(
@@ -415,6 +449,11 @@ class ConveyorBeltLeft extends BasicObject {
             gridY,
             scene
         );
+        this.speed = getGameObjectById(this.getId()).upgrades[0].details.speed;
+    }
+
+    upgrade(details: object) {
+        this.speed = details.speed;
     }
 
     getId(): number {
@@ -447,7 +486,6 @@ class ConveyorBeltLeft extends BasicObject {
     }
 
     update(items) {
-        const moveValue = 0.5;
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
 
@@ -487,25 +525,25 @@ class ConveyorBeltLeft extends BasicObject {
 
             if (overlapsInitialDetectionZone) {
                 if (this.direction === NORTH) {
-                    newY -= moveValue;
+                    newY -= this.speed;
                 } else if (this.direction === EAST) {
-                    newX += moveValue;
+                    newX += this.speed;
                 } else if (this.direction === SOUTH) {
-                    newY += moveValue;
+                    newY += this.speed;
                 } else if (this.direction === WEST) {
-                    newX -= moveValue;
+                    newX -= this.speed;
                 }
             }
 
             if (overlapsTurnDetectionZone) {
                 if (secondDirection === NORTH) {
-                    newY -= moveValue;
+                    newY -= this.speed;
                 } else if (secondDirection === EAST) {
-                    newX += moveValue;
+                    newX += this.speed;
                 } else if (secondDirection === SOUTH) {
-                    newY += moveValue;
+                    newY += this.speed;
                 } else if (secondDirection === WEST) {
-                    newX -= moveValue;
+                    newX -= this.speed;
                 }
             }
 
@@ -527,6 +565,7 @@ class ConveyorBeltRight extends BasicObject {
         0,
         0
     );
+    speed: number;
 
     constructor(gridX, gridY, scene) {
         super(
@@ -534,6 +573,7 @@ class ConveyorBeltRight extends BasicObject {
             gridY,
             scene
         );
+        this.speed = getGameObjectById(this.getId()).upgrades[0].details.speed;
     }
 
     getId(): number {
@@ -566,7 +606,6 @@ class ConveyorBeltRight extends BasicObject {
     }
 
     update(items) {
-        const moveValue = 0.5;
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
 
@@ -606,30 +645,34 @@ class ConveyorBeltRight extends BasicObject {
 
             if (overlapsInitialDetectionZone) {
                 if (this.direction === NORTH) {
-                    newY -= moveValue;
+                    newY -= this.speed;
                 } else if (this.direction === EAST) {
-                    newX += moveValue;
+                    newX += this.speed;
                 } else if (this.direction === SOUTH) {
-                    newY += moveValue;
+                    newY += this.speed;
                 } else if (this.direction === WEST) {
-                    newX -= moveValue;
+                    newX -= this.speed;
                 }
             }
 
             if (overlapsTurnDetectionZone) {
                 if (secondDirection === NORTH) {
-                    newY -= moveValue;
+                    newY -= this.speed;
                 } else if (secondDirection === EAST) {
-                    newX += moveValue;
+                    newX += this.speed;
                 } else if (secondDirection === SOUTH) {
-                    newY += moveValue;
+                    newY += this.speed;
                 } else if (secondDirection === WEST) {
-                    newX -= moveValue;
+                    newX -= this.speed;
                 }
             }
 
             item.moveTo(newX, newY);
         }
+    }
+
+    upgrade(details: object) {
+        this.speed = details.speed;
     }
 }
 
@@ -696,13 +739,13 @@ function updateTurnedConveyorBeltDetectionZone(
 
 class LogProducer extends BasicObject {
     lastProducedTimestampInMs: number = 0;
-    metaData: LogProducerMetaData;
     detectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
         0,
         0,
         0,
         0
     );
+    productionTimeMs: number;
 
     constructor(gridX, gridY, scene) {
         super(
@@ -716,7 +759,7 @@ class LogProducer extends BasicObject {
             ]
         );
         this.lastProducedTimestampInMs = new Date().getTime();
-        this.metaData = getGameObjectById(this.getId()).metaData as LogProducerMetaData;
+        this.productionTimeMs = getGameObjectById(this.getId()).upgrades[0].details.productionTimeMs;
     }
 
     updateDetectionZones() {
@@ -752,7 +795,7 @@ class LogProducer extends BasicObject {
 
     update(items: GameItem[]) {
         const currentTime = new Date().getTime();
-        if (currentTime - this.lastProducedTimestampInMs < this.metaData.productionTimeMs) {
+        if (currentTime - this.lastProducedTimestampInMs < this.productionTimeMs) {
             return;
         }
 
@@ -785,6 +828,8 @@ class LogProducer extends BasicObject {
 
         return super.canBePlaced();
     }
-}
 
-type LogProducerMetaData = { productionTimeMs: number };
+    upgrade(details: object) {
+        this.productionTimeMs = details.productionTimeMs;
+    }
+}

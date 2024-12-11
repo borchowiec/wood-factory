@@ -10,7 +10,6 @@ import {
 import {paintTerrain} from "./terrainPainter.js";
 import {gameObjects, getGameObjectById} from "../common/GameObjectData";
 import {createObject} from "./gameObjects.ts";
-import {LogItem} from "./gameItems.ts";
 
 function getSuccessResponse() {
     return {success: true};
@@ -33,7 +32,7 @@ export class MainScene extends Scene {
         this.longPressTimer = null;
         this.items = null;
 
-        this.setMoney(10000);
+        this.setMoney(100000);
     }
 
     preload() {
@@ -167,8 +166,15 @@ export class MainScene extends Scene {
         this.selectedObject = this.grid[tileX][tileY];
         this.selectedObject.setSelected(true);
         this.selectedObject.paint();
+
         const movingExistingObjectEvent = new CustomEvent("movingExistingObject", {
-            detail: {}
+            detail: {
+                upgradeDetails: {
+                    isMaxLevel: this.selectedObject.isMaxLevel(),
+                    upgradePrice: this.selectedObject.isMaxLevel() ? 0 : this.selectedObject.getUpgradePrice(),
+                    currentLevel: this.selectedObject.getCurrentLevel()
+                }
+            },
         });
         window.dispatchEvent(movingExistingObjectEvent);
     }
@@ -346,5 +352,35 @@ export class MainScene extends Scene {
     zoom(zoomChange) {
         this.cameras.main.zoom += zoomChange;
         this.cameras.main.zoom = Phaser.Math.Clamp(this.cameras.main.zoom, 0.7, 3);
+    }
+
+    upgradeSelectedObject() {
+        if (!this.selectedObject) {
+            return getSuccessResponse();
+        }
+
+        if (this.selectedObject.isMaxLevel()) {
+            return getSuccessResponse();
+        }
+
+        if (this.selectedObject.getUpgradePrice() > this.money) {
+            return getErrorResponse("Not enough money");
+        }
+
+        this.setMoney(this.money - this.selectedObject.getUpgradePrice());
+        this.selectedObject.setLevel(this.selectedObject.currentLevel + 1);
+
+        const movingExistingObjectEvent = new CustomEvent("movingExistingObject", {
+            detail: {
+                upgradeDetails: {
+                    isMaxLevel: this.selectedObject.isMaxLevel(),
+                    upgradePrice: this.selectedObject.isMaxLevel() ? 0 : this.selectedObject.getUpgradePrice(),
+                    currentLevel: this.selectedObject.getCurrentLevel()
+                }
+            },
+        });
+        window.dispatchEvent(movingExistingObjectEvent);
+
+        return getSuccessResponse();
     }
 }

@@ -5,12 +5,14 @@ import {launch, MainScene} from "../../game/game.js";
 import {addCircleOutline, removeCircleOutline} from "ionicons/icons";
 import {FooterType, getFooter} from "../components/footer/Footer";
 import {GameObjectData} from "../../common/GameObjectData";
+import {UpgradeDetails} from "../components/footer/ObjectActionsFooter";
 
 const GamePage: React.FC = () => {
     const [game, setGame] = useState(undefined as Game);
     const [footer, setFooter] = useState(FooterType.ACTIONS);
 
     const [money, setMoney] = useState(0);
+    const [upgradeDetails, setUpgradeDetails] = useState({isMaxLevel: false, currentLevel: 1, upgradePrice: 0} as UpgradeDetails);
     const [currentObject, setCurrentObject] = useState(undefined as GameObjectData);
     const [errorMessage, setErrorMessage] = useState(undefined as string);
 
@@ -30,8 +32,9 @@ const GamePage: React.FC = () => {
             setMoney(event.detail.money);
         }
 
-        const handleMovingExistingObject = () => {
+        const handleMovingExistingObject = event => {
             setFooter(FooterType.OBJECT_ACTIONS);
+            setUpgradeDetails(event.detail.upgradeDetails);
         }
 
         window.addEventListener('moneyUpdate', handleMoneyUpdate);
@@ -113,7 +116,8 @@ const GamePage: React.FC = () => {
                             showErrorMessage,
                             setCurrentObject,
                             getMainScene(),
-                            currentObject
+                            currentObject,
+                            upgradeDetails
                         )
                         : <></>
                 }

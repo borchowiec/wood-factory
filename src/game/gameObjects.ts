@@ -29,6 +29,65 @@ const CAN_BE_PLACED_COLOR = 0x00ff00;
 
 const SELECTION_LINE_WIDTH = 5;
 
+class ProgressBar {
+
+    backgroundGraphics: Phaser.GameObjects.Graphics;
+    barGraphics: Phaser.GameObjects.Graphics;
+    x: number;
+    y: number;
+    size: number;
+    progressLength: number;
+
+    constructor(scene, x, y, size) {
+        this.backgroundGraphics = scene.add.graphics();
+        this.barGraphics = scene.add.graphics();
+
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.progressLength = 0;
+
+        this.update();
+    }
+
+    update() {
+        const height = 10;
+
+        this.backgroundGraphics.clear();
+        this.barGraphics.clear();
+
+        this.backgroundGraphics.setDepth(OBJECT_DEPTH + 10);
+        this.backgroundGraphics.fillStyle(0x000000, 0.5);
+        this.backgroundGraphics.x = this.x;
+        this.backgroundGraphics.y = this.y;
+        this.backgroundGraphics.fillRect(0, 0, this.size, height);
+
+        this.barGraphics.setDepth(OBJECT_DEPTH + 11);
+        this.barGraphics.fillStyle(0x00ff00, 0.5);
+        this.barGraphics.x = this.x;
+        this.barGraphics.y = this.y;
+        this.barGraphics.fillRect(0, 0, this.progressLength, height);
+    }
+
+    updateProgress(progress: number) {
+        if (progress < 0) {
+            progress = 0;
+        }
+        if (progress > 100) {
+            progress = 100;
+        }
+        this.progressLength = (progress / 100.0) * this.size;
+
+        this.update();
+    }
+
+    move(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+        this.update();
+    }
+}
+
 export function createObject(id, scene) {
     switch (id) {
         case CONVEYOR_BELT_ID:
@@ -746,6 +805,7 @@ class LogProducer extends BasicObject {
         0
     );
     productionTimeMs: number;
+    progressBar: ProgressBar;
 
     constructor(gridX, gridY, scene) {
         super(
@@ -760,6 +820,7 @@ class LogProducer extends BasicObject {
         );
         this.lastProducedTimestampInMs = new Date().getTime();
         this.productionTimeMs = getGameObjectById(this.getId()).upgrades[0].details.productionTimeMs;
+        this.progressBar = new ProgressBar(this.scene, gridX*TILE_SIZE, gridY*TILE_SIZE, TILE_SIZE);
     }
 
     updateDetectionZones() {
@@ -767,6 +828,8 @@ class LogProducer extends BasicObject {
         this.detectionZone.height = TILE_SIZE;
         this.detectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE * 0.8;
         this.detectionZone.y = this.gridY * TILE_SIZE;
+
+        this.progressBar.move(this.gridX*TILE_SIZE, this.gridY*TILE_SIZE);
     }
 
     getDetectionZones(): Phaser.Geom.Rectangle[] {
@@ -796,9 +859,12 @@ class LogProducer extends BasicObject {
     update(items: GameItem[]) {
         const currentTime = new Date().getTime();
         if (currentTime - this.lastProducedTimestampInMs < this.productionTimeMs) {
+            const progress = (currentTime - this.lastProducedTimestampInMs) / this.productionTimeMs * 100;
+            this.progressBar.updateProgress(progress);
             return;
         }
 
+        this.progressBar.updateProgress(100);
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
             for (let j = 0; j < item.getDetectionZones().length; j++) {
@@ -819,6 +885,7 @@ class LogProducer extends BasicObject {
         logItem.paint();
 
         this.lastProducedTimestampInMs = currentTime;
+        this.progressBar.updateProgress(0);
     }
 
     canBePlaced(): boolean {

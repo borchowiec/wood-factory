@@ -419,6 +419,8 @@ abstract class BasicObject extends GameObject {
         gameObject.initializePlacementGraphics(gameObject.incorrectPlacementGraphics, CANNOT_BE_PLACED_COLOR);
         gameObject.initializePlacementGraphics(gameObject.correctPlacementGraphics, CAN_BE_PLACED_COLOR);
 
+        gameObject.setLevel(this.currentLevel);
+
         return gameObject;
     }
 

@@ -53,16 +53,16 @@ export const ShopFooter: React.FC = (
                         }}
                     >
                         <div style={{
-                            padding: "5px",
+                            padding: "0",
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center"
                         }}>
-                            <div style={{fontSize: "12px", fontWeight: "bold"}}>
+                            <div style={{fontSize: "10px", fontWeight: "bold"}}>
                                 ${object.price}
                             </div>
-                            <img src={object.imageData.icon} style={{maxWidth: "32px", maxHeight: "32px"}}/>
-                            <div style={{fontSize: "12px", fontWeight: "bold"}}>
+                            <img src={object.imageData.icon} style={{marginBottom: "5px", maxWidth: "32px", maxHeight: "32px"}}/>
+                            <div style={{fontSize: "10px", fontWeight: "bold"}}>
                                 {object.name}
                             </div>
                         </div>

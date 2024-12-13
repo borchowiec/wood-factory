@@ -12,9 +12,11 @@ import {
     CONVEYOR_BELT_LEFT_ID,
     CONVEYOR_BELT_RIGHT_ID,
     getGameObjectById,
-    LOG_PRODUCER_ID, SAW_MILL_ID
+    LOG_PRODUCER_ID,
+    SAW_MILL_ID,
+    WORKSHOP_ID
 } from "../common/GameObjectData.ts";
-import {GameItem, LogItem, PlankItem} from "./gameItems";
+import {BarItem, GameItem, LogItem, PlankItem} from "./gameItems";
 import * as Phaser from "phaser";
 
 const NORTH = 0;
@@ -110,6 +112,8 @@ export function createObject(id, scene) {
             return new LogProducer(-5, -5, scene);
         case SAW_MILL_ID:
             return new SawMill(-5, -5, scene);
+        case WORKSHOP_ID:
+            return new Workshop(-5, -5, scene);
     }
 }
 
@@ -881,7 +885,7 @@ class LogProducer extends BasicObject {
     }
 }
 
-class SawMill extends BasicObject {
+abstract class InOutObject extends BasicObject {
     private productionTimeMs: number;
     private progressBar: ProgressBar;
     private hasItem: boolean = false;
@@ -956,10 +960,6 @@ class SawMill extends BasicObject {
         this.progressBar.move(this.gridX*TILE_SIZE, this.gridY*TILE_SIZE);
     }
 
-    getId(): number {
-        return SAW_MILL_ID;
-    }
-
     update(items: GameItem[]): void {
         if (this.hasItem) {
             const currentTime = new Date().getTime();
@@ -988,7 +988,7 @@ class SawMill extends BasicObject {
             } else if (this.direction === NORTH) {
                 y -= TILE_SIZE;
             }
-            const newItem = new PlankItem(x, y, this.scene);
+            const newItem = this.produceItem(x, y, this.scene);
             this.scene.items.push(newItem);
             newItem.paint();
             this.progressBar.updateProgress(0);
@@ -1027,5 +1027,35 @@ class SawMill extends BasicObject {
     setVisible(isVisible: boolean) {
         super.setVisible(isVisible);
         this.progressBar.setVisible(isVisible);
+    }
+
+    abstract produceItem(x: number, y: number, scene: Phaser.Scene): GameItem;
+}
+
+class SawMill extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene);
+    }
+
+    getId(): number {
+        return SAW_MILL_ID;
+    }
+
+    produceItem(x: number, y: number, scene: Phaser.Scene) {
+        return new PlankItem(x, y, scene);
+    }
+}
+
+class Workshop extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene);
+    }
+
+    getId(): number {
+        return WORKSHOP_ID;
+    }
+
+    produceItem(x: number, y: number, scene: Phaser.Scene) {
+        return new BarItem(x, y, scene);
     }
 }

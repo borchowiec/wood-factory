@@ -13,7 +13,6 @@ export type GameObjectData = {
         spriteAnimationFrames: number[];
     },
     upgrades: {price: number, details: object}[];
-    metaData: object;
 }
 
 class GameObjectDataBuilder {
@@ -95,7 +94,6 @@ class GameObjectDataBuilder {
                 spriteAnimationRate: 10,
                 spriteAnimationFrames: this.spriteAnimationFrames,
             },
-            metaData: {},
             upgrades: this.upgrades,
         }
     }
@@ -149,7 +147,14 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(300, {productionTimeMs: 7500})
         .withUpgrade(600, {productionTimeMs: 5000})
         .withUpgrade(900, {productionTimeMs: 2500})
-        .build()
+        .build(),
+    new GameObjectDataBuilder(WOODEN_NAILS_WORKSHOP_ID, "woodenNailsWorkshop", "Wooden Nails Workshop", 1200)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {productionTimeMs: 10000})
+        .withUpgrade(400, {productionTimeMs: 7500})
+        .withUpgrade(800, {productionTimeMs: 5000})
+        .withUpgrade(1200, {productionTimeMs: 2500})
+        .build(),
 ];
 
 export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

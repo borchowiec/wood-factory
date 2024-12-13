@@ -13,10 +13,11 @@ import {
     CONVEYOR_BELT_RIGHT_ID,
     getGameObjectById,
     LOG_PRODUCER_ID,
-    SAW_MILL_ID,
+    SAW_MILL_ID, WOODEN_NAILS_WORKSHOP_ID,
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
-import {BarItem, GameItem, LogItem, PlankItem} from "./gameItems";
+import {BarItem, GameItem, LogItem, NailItem, PlankItem} from "./gameItems";
+import * as Phaser from "phaser";
 import * as Phaser from "phaser";
 
 const NORTH = 0;
@@ -114,6 +115,8 @@ export function createObject(id, scene) {
             return new SawMill(-5, -5, scene);
         case WORKSHOP_ID:
             return new Workshop(-5, -5, scene);
+        case WOODEN_NAILS_WORKSHOP_ID:
+            return new WoodenNailsWorkshop(-5, -5, scene);
     }
 }
 
@@ -988,9 +991,10 @@ abstract class InOutObject extends BasicObject {
             } else if (this.direction === NORTH) {
                 y -= TILE_SIZE;
             }
-            const newItem = this.produceItem(x, y, this.scene);
-            this.scene.items.push(newItem);
-            newItem.paint();
+            this.produceItems(x, y, this.scene).forEach(newItem => {
+                this.scene.items.push(newItem);
+                newItem.paint();
+            });
             this.progressBar.updateProgress(0);
             this.hasItem = false;
             return;
@@ -999,7 +1003,7 @@ abstract class InOutObject extends BasicObject {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
 
-            if (!(item instanceof LogItem)) {
+            if (!this.isInputItemAcceptable(item)) {
                 continue;
             }
 
@@ -1029,7 +1033,9 @@ abstract class InOutObject extends BasicObject {
         this.progressBar.setVisible(isVisible);
     }
 
-    abstract produceItem(x: number, y: number, scene: Phaser.Scene): GameItem;
+    abstract produceItems(x: number, y: number, scene: Phaser.Scene): GameItem[];
+
+    abstract isInputItemAcceptable(item: GameItem): boolean;
 }
 
 class SawMill extends InOutObject {
@@ -1041,8 +1047,12 @@ class SawMill extends InOutObject {
         return SAW_MILL_ID;
     }
 
-    produceItem(x: number, y: number, scene: Phaser.Scene) {
-        return new PlankItem(x, y, scene);
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new PlankItem(x, y, scene)];
+    }
+
+    isInputItemAcceptable(item: GameItem): boolean {
+        return item instanceof LogItem;
     }
 }
 
@@ -1055,7 +1065,29 @@ class Workshop extends InOutObject {
         return WORKSHOP_ID;
     }
 
-    produceItem(x: number, y: number, scene: Phaser.Scene) {
-        return new BarItem(x, y, scene);
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new BarItem(x, y, scene)];
+    }
+
+    isInputItemAcceptable(item: GameItem): boolean {
+        return item instanceof LogItem;
+    }
+}
+
+class WoodenNailsWorkshop extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene);
+    }
+
+    getId(): number {
+        return WOODEN_NAILS_WORKSHOP_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new NailItem(x, y, scene), new NailItem(x+3, y+3, scene)];
+    }
+
+    isInputItemAcceptable(item: GameItem): boolean {
+        return item instanceof PlankItem;
     }
 }

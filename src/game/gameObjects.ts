@@ -16,8 +16,7 @@ import {
     SAW_MILL_ID, WOODEN_NAILS_WORKSHOP_ID,
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
-import {BarItem, GameItem, LogItem, NailItem, PlankItem} from "./gameItems";
-import * as Phaser from "phaser";
+import {BeamItem, GameItem, LogItem, NailItem, PlankItem} from "./gameItems";
 import * as Phaser from "phaser";
 
 const NORTH = 0;
@@ -394,6 +393,10 @@ abstract class BasicObject extends GameObject {
     }
 
     setLevel(level: number) {
+        if (level > getGameObjectById(this.getId()).upgrades.length) {
+            level = getGameObjectById(this.getId()).upgrades.length;
+        }
+
         this.currentLevel = level;
         this.upgrade(getGameObjectById(this.getId()).upgrades[this.currentLevel-1].details);
     }
@@ -1068,7 +1071,7 @@ class Workshop extends InOutObject {
     }
 
     produceItems(x: number, y: number, scene: Phaser.Scene) {
-        return [new BarItem(x, y, scene)];
+        return [new BeamItem(x, y, scene)];
     }
 
     isInputItemAcceptable(item: GameItem): boolean {

@@ -137,19 +137,19 @@ export class LogItem extends BasicItem {
 
 export class PlankItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "log", scene, 25);
+        super(x, y, "plank", scene, 25);
     }
 }
 
 
-export class BarItem extends BasicItem {
+export class BeamItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "log", scene, 25);
+        super(x, y, "beam", scene, 25);
     }
 }
 
 export class NailItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "log", scene, 7);
+        super(x, y, "nail", scene, 7);
     }
 }

@@ -53,7 +53,8 @@ export class MainScene extends Scene {
             frameHeight: 64
         });
 
-        this.load.image('log', 'assets/items/log.png');
+        ["log", "beam", "nail", "plank"]
+            .forEach(item => this.load.image(item, `assets/items/${item}.png`));
     }
 
     create() {

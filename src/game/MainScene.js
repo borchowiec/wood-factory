@@ -383,4 +383,9 @@ export class MainScene extends Scene {
 
         return getSuccessResponse();
     }
+
+    removeItem(item) {
+        item.clear();
+        this.items.splice(this.items.indexOf(item), 1);
+    }
 }

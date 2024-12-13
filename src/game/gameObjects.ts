@@ -12,9 +12,9 @@ import {
     CONVEYOR_BELT_LEFT_ID,
     CONVEYOR_BELT_RIGHT_ID,
     getGameObjectById,
-    LOG_PRODUCER_ID
+    LOG_PRODUCER_ID, SAW_MILL_ID
 } from "../common/GameObjectData.ts";
-import {GameItem, LogItem} from "./gameItems";
+import {GameItem, LogItem, PlankItem} from "./gameItems";
 import * as Phaser from "phaser";
 
 const NORTH = 0;
@@ -86,6 +86,16 @@ class ProgressBar {
         this.y = y;
         this.update();
     }
+
+    clear() {
+        this.backgroundGraphics.destroy();
+        this.barGraphics.destroy();
+    }
+
+    setVisible(isVisible: boolean) {
+        this.backgroundGraphics.setVisible(isVisible);
+        this.barGraphics.setVisible(isVisible);
+    }
 }
 
 export function createObject(id, scene) {
@@ -98,6 +108,8 @@ export function createObject(id, scene) {
             return new ConveyorBeltRight(-5, -5, scene);
         case LOG_PRODUCER_ID:
             return new LogProducer(-5, -5, scene);
+        case SAW_MILL_ID:
+            return new SawMill(-5, -5, scene);
     }
 }
 
@@ -384,6 +396,25 @@ abstract class BasicObject extends GameObject {
         return this.currentLevel;
     }
 
+
+    copy(): GameObject {
+        const gameObject = createObject(this.getId(), this.scene);
+
+        gameObject.tileOffsets = this.tileOffsets;
+        gameObject.direction = this.direction;
+        gameObject.isSelected = this.isSelected;
+        gameObject.sprite.setRotation(Phaser.Math.DegToRad(DIRECTIONS_TO_DEG[this.direction]));
+        gameObject.move(this.gridX, this.gridY);
+        gameObject.updateVisibility();
+
+        gameObject.incorrectPlacementGraphics.clear();
+        gameObject.correctPlacementGraphics.clear();
+        gameObject.initializePlacementGraphics(gameObject.incorrectPlacementGraphics, CANNOT_BE_PLACED_COLOR);
+        gameObject.initializePlacementGraphics(gameObject.correctPlacementGraphics, CAN_BE_PLACED_COLOR);
+
+        return gameObject;
+    }
+
     abstract upgrade(details: object);
 }
 
@@ -408,22 +439,6 @@ class ConveyorBelt extends BasicObject {
     getId(): number {
         return CONVEYOR_BELT_ID;
     }
-
-    copy(): GameObject {
-        let conveyorBelt = new ConveyorBelt(
-            this.gridX,
-            this.gridY,
-            this.scene
-        );
-        conveyorBelt.direction = this.direction;
-        conveyorBelt.isSelected = this.isSelected;
-        conveyorBelt.move(this.gridX, this.gridY);
-        conveyorBelt.sprite.setRotation(Phaser.Math.DegToRad(DIRECTIONS_TO_DEG[this.direction]));
-        conveyorBelt.updateVisibility();
-
-        return conveyorBelt;
-    }
-
 
     updateDetectionZones() {
         const detectionZoneSize = TILE_SIZE / 2;
@@ -518,22 +533,6 @@ class ConveyorBeltLeft extends BasicObject {
     getId(): number {
         return CONVEYOR_BELT_LEFT_ID;
     }
-
-    copy(): GameObject {
-        let conveyorBelt = new ConveyorBeltLeft(
-            this.gridX,
-            this.gridY,
-            this.scene
-        );
-        conveyorBelt.direction = this.direction;
-        conveyorBelt.isSelected = this.isSelected;
-        conveyorBelt.move(this.gridX, this.gridY);
-        conveyorBelt.sprite.setRotation(Phaser.Math.DegToRad(DIRECTIONS_TO_DEG[this.direction]));
-        conveyorBelt.updateVisibility();
-
-        return conveyorBelt;
-    }
-
 
     updateDetectionZones() {
         updateTurnedConveyorBeltDetectionZone(this.initialDetectionZone, this.direction, this.gridX, this.gridY);
@@ -638,22 +637,6 @@ class ConveyorBeltRight extends BasicObject {
     getId(): number {
         return CONVEYOR_BELT_RIGHT_ID;
     }
-
-    copy(): GameObject {
-        let conveyorBelt = new ConveyorBeltRight(
-            this.gridX,
-            this.gridY,
-            this.scene
-        );
-        conveyorBelt.direction = this.direction;
-        conveyorBelt.isSelected = this.isSelected;
-        conveyorBelt.move(this.gridX, this.gridY);
-        conveyorBelt.sprite.setRotation(Phaser.Math.DegToRad(DIRECTIONS_TO_DEG[this.direction]));
-        conveyorBelt.updateVisibility();
-
-        return conveyorBelt;
-    }
-
 
     updateDetectionZones() {
         updateTurnedConveyorBeltDetectionZone(this.initialDetectionZone, this.direction, this.gridX, this.gridY);
@@ -823,6 +806,11 @@ class LogProducer extends BasicObject {
         this.progressBar = new ProgressBar(this.scene, gridX*TILE_SIZE, gridY*TILE_SIZE, TILE_SIZE);
     }
 
+    setVisible(isVisible: boolean) {
+        super.setVisible(isVisible);
+        this.progressBar.setVisible(isVisible);
+    }
+
     updateDetectionZones() {
         this.detectionZone.width = TILE_SIZE;
         this.detectionZone.height = TILE_SIZE;
@@ -838,19 +826,6 @@ class LogProducer extends BasicObject {
 
     getId(): number {
         return LOG_PRODUCER_ID;
-    }
-
-    copy(): GameObject {
-        let logProducer = new LogProducer(
-            this.gridX,
-            this.gridY,
-            this.scene
-        );
-        logProducer.isSelected = this.isSelected;
-        logProducer.move(this.gridX, this.gridY);
-        logProducer.updateVisibility();
-
-        return logProducer;
     }
 
     rotate() {
@@ -898,5 +873,159 @@ class LogProducer extends BasicObject {
 
     upgrade(details: object) {
         this.productionTimeMs = details.productionTimeMs;
+    }
+
+    clear() {
+        super.clear();
+        this.progressBar.clear();
+    }
+}
+
+class SawMill extends BasicObject {
+    private productionTimeMs: number;
+    private progressBar: ProgressBar;
+    private hasItem: boolean = false;
+    private productionStartTimestampInMs: number = 0;
+
+    private inDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
+        0,
+        0,
+        0,
+        0
+    );
+    private outDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
+        0,
+        0,
+        0,
+        0
+    );
+
+    constructor(gridX, gridY, scene) {
+        super(
+            gridX,
+            gridY,
+            scene,
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: 0}
+            ]
+        );
+        this.productionTimeMs = getGameObjectById(this.getId()).upgrades[0].details.productionTimeMs;
+        this.progressBar = new ProgressBar(this.scene, gridX*TILE_SIZE, gridY*TILE_SIZE, TILE_SIZE);
+    }
+
+    getDetectionZones(): Phaser.Geom.Rectangle[] {
+        return [this.outDetectionZone, this.inDetectionZone];
+    }
+
+    updateDetectionZones() {
+        const detectorSize = TILE_SIZE / 10;
+
+        if (this.direction === EAST || this.direction === WEST) {
+            this.inDetectionZone.width = detectorSize;
+            this.inDetectionZone.height = TILE_SIZE;
+            this.inDetectionZone.y = this.gridY * TILE_SIZE;
+
+            this.outDetectionZone.width = detectorSize;
+            this.outDetectionZone.height = TILE_SIZE;
+            this.outDetectionZone.y = this.gridY * TILE_SIZE;
+        } else {
+            this.inDetectionZone.width = TILE_SIZE;
+            this.inDetectionZone.height = detectorSize;
+            this.inDetectionZone.x = this.gridX * TILE_SIZE;
+
+            this.outDetectionZone.width = TILE_SIZE;
+            this.outDetectionZone.height = detectorSize;
+            this.outDetectionZone.x = this.gridX * TILE_SIZE;
+        }
+
+        if (this.direction === NORTH) {
+            this.inDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+            this.outDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+        } else if (this.direction === EAST) {
+            this.inDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+            this.outDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+        } else if (this.direction === SOUTH) {
+            this.inDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+            this.outDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+        } else if (this.direction === WEST) {
+            this.inDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+            this.outDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+        }
+
+        this.progressBar.move(this.gridX*TILE_SIZE, this.gridY*TILE_SIZE);
+    }
+
+    getId(): number {
+        return SAW_MILL_ID;
+    }
+
+    update(items: GameItem[]): void {
+        if (this.hasItem) {
+            const currentTime = new Date().getTime();
+            if (currentTime - this.productionStartTimestampInMs < this.productionTimeMs) {
+                const progress = (currentTime - this.productionStartTimestampInMs) / this.productionTimeMs * 100;
+                this.progressBar.updateProgress(progress);
+                return;
+            }
+
+            this.progressBar.updateProgress(100);
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                let detectionZones = item.getDetectionZones();
+                for (let j = 0; j < detectionZones.length; j++) {
+                    if (Phaser.Geom.Rectangle.Overlaps(detectionZones[j], this.outDetectionZone)) {
+                        return;
+                    }
+                }
+            }
+
+            let x = this.outDetectionZone.x;
+            let y = this.outDetectionZone.y;
+            if (this.direction === WEST) {
+                x -= TILE_SIZE;
+            } else if (this.direction === NORTH) {
+                y -= TILE_SIZE;
+            }
+            const newItem = new PlankItem(x, y, this.scene);
+            this.scene.items.push(newItem);
+            newItem.paint();
+            this.progressBar.updateProgress(0);
+            this.hasItem = false;
+            return;
+        }
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+
+            if (!(item instanceof LogItem)) {
+                continue;
+            }
+
+            let detectionZones = item.getDetectionZones();
+            for (let j = 0; j < detectionZones.length; j++) {
+                if (Phaser.Geom.Rectangle.Overlaps(detectionZones[j], this.inDetectionZone)) {
+                    this.hasItem = true;
+                    this.productionStartTimestampInMs = new Date().getTime();
+                    this.scene.removeItem(item);
+                }
+            }
+        }
+    }
+
+    upgrade(details: object) {
+        this.productionTimeMs = details.productionTimeMs;
+    }
+
+    clear() {
+        super.clear();
+        this.progressBar.clear();
+    }
+
+
+    setVisible(isVisible: boolean) {
+        super.setVisible(isVisible);
+        this.progressBar.setVisible(isVisible);
     }
 }

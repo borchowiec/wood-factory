@@ -24,13 +24,16 @@ abstract class BasicItem extends GameItem {
     horizontalDetectionZone: Phaser.Geom.Rectangle;
     debugGraphics: Phaser.GameObjects.Graphics;
     image: Phaser.GameObjects.Image;
+    price: number;
 
-    protected constructor(x, y, imageName, scene: Phaser.Scene) {
+    protected constructor(x, y, imageName, scene: Phaser.Scene, price) {
         super();
 
         this.image = scene.add.image(x, y, imageName);
         this.image.setOrigin(0, 0);
         this.image.setDepth(ITEM_DEPTH);
+
+        this.price = price;
 
         this.width = this.image.width;
         this.height = this.image.height;
@@ -120,14 +123,33 @@ abstract class BasicItem extends GameItem {
         }
         return false;
     }
+
+    getPrice(): number {
+        return this.price;
+    }
 }
 
 export class LogItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "log", scene);
+        super(x, y, "log", scene, 10);
     }
+}
 
-    getPrice(): number {
-        return 10;
+export class PlankItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, "log", scene, 25);
+    }
+}
+
+
+export class BarItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, "log", scene, 25);
+    }
+}
+
+export class NailItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, "log", scene, 7);
     }
 }

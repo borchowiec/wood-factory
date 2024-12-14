@@ -135,14 +135,16 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(4000, {productionTimeMs: 2500})
         .build(),
     new GameObjectDataBuilder(SAW_MILL_ID, "sawMill", "Saw Mill", 500)
-        .withSpritesDirName("conveyorBelt")
+        .withSpriteFrameWidth(128)
+        .withSpriteAnimationFrames([0, 1, 2, 3, 4, 5, 6, 7])
         .withUpgrade(0, {productionTimeMs: 10000})
         .withUpgrade(200, {productionTimeMs: 7500})
         .withUpgrade(400, {productionTimeMs: 5000})
         .withUpgrade(600, {productionTimeMs: 2500})
         .build(),
     new GameObjectDataBuilder(WORKSHOP_ID, "workshop", "Workshop", 750)
-        .withSpritesDirName("conveyorBelt")
+        .withSpriteFrameWidth(128)
+        .withSpriteAnimationFrames([0, 1, 2, 3, 4, 5, 6, 7])
         .withUpgrade(0, {productionTimeMs: 10000})
         .withUpgrade(300, {productionTimeMs: 7500})
         .withUpgrade(600, {productionTimeMs: 5000})

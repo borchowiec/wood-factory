@@ -181,10 +181,22 @@ abstract class BasicObject extends GameObject {
 
         const gameObjectData = getGameObjectById(this.getId());
 
+        const minTileOffsetX = Math.min(...this.tileOffsets.map(tileOffset => tileOffset.gridX));
+        const maxTileOffsetX = Math.max(...this.tileOffsets.map(tileOffset => tileOffset.gridX));
+        const minTileOffsetY = Math.min(...this.tileOffsets.map(tileOffset => tileOffset.gridY));
+        const maxTileOffsetY = Math.max(...this.tileOffsets.map(tileOffset => tileOffset.gridY));
+
+        const numberOfXTiles = maxTileOffsetX - minTileOffsetX + 1;
+        const numberOfYTiles = maxTileOffsetY - minTileOffsetY + 1;
+
         this.sprite = this.scene.add.sprite(
             this.gridX * TILE_SIZE + TILE_SIZE / 2,
             this.gridY * TILE_SIZE + TILE_SIZE / 2,
             gameObjectData.imageData.spriteName
+        );
+        this.sprite.setOrigin(
+            (-1*minTileOffsetX+0.5)/numberOfXTiles,
+            (-1*minTileOffsetY+0.5)/numberOfYTiles
         );
         this.sprite.setDepth(OBJECT_DEPTH);
         this.sprite.play(gameObjectData.imageData.spriteAnimationName, true);

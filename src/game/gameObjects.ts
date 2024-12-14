@@ -559,8 +559,8 @@ class ConveyorBeltLeft extends BasicObject {
     }
 
     updateDetectionZones() {
-        updateTurnedConveyorBeltDetectionZone(this.initialDetectionZone, this.direction, this.gridX, this.gridY);
-        updateTurnedConveyorBeltDetectionZone(this.turnDetectionZone, (this.direction+1)%4, this.gridX, this.gridY);
+        updateTurnedConveyorBeltDetectionZone(this.initialDetectionZone, this.direction, this.gridX, this.gridY, TILE_SIZE / 10);
+        updateTurnedConveyorBeltDetectionZone(this.turnDetectionZone, (this.direction+1)%4, this.gridX, this.gridY, TILE_SIZE / 4);
     }
 
     getDetectionZones(): Phaser.Geom.Rectangle[] {
@@ -663,8 +663,8 @@ class ConveyorBeltRight extends BasicObject {
     }
 
     updateDetectionZones() {
-        updateTurnedConveyorBeltDetectionZone(this.initialDetectionZone, this.direction, this.gridX, this.gridY);
-        updateTurnedConveyorBeltDetectionZone(this.turnDetectionZone, (this.direction+3)%4, this.gridX, this.gridY);
+        updateTurnedConveyorBeltDetectionZone(this.initialDetectionZone, this.direction, this.gridX, this.gridY, TILE_SIZE / 10);
+        updateTurnedConveyorBeltDetectionZone(this.turnDetectionZone, (this.direction+3)%4, this.gridX, this.gridY, TILE_SIZE / 4);
     }
 
     getDetectionZones(): Phaser.Geom.Rectangle[] {
@@ -744,8 +744,19 @@ class ConveyorBeltRight extends BasicObject {
 
 function shouldConveyorBeltMoveItem(item: GameItem, items: GameItem[], direction: number): boolean {
     for (let i = 0; i < items.length; i++) {
+        const distanceMargin = TILE_SIZE * 0.4;
         const currentItem = items[i];
         if (currentItem === item) {
+            continue;
+        }
+
+        const horizontalDifference = Math.abs(currentItem.getX() - item.getX());
+        const verticalDifference = Math.abs(currentItem.getY() - item.getY());
+
+        if ((direction === NORTH || direction === SOUTH) && horizontalDifference > distanceMargin) {
+            continue;
+        }
+        if ((direction === EAST || direction === WEST) && verticalDifference > distanceMargin) {
             continue;
         }
 
@@ -774,10 +785,10 @@ function updateTurnedConveyorBeltDetectionZone(
     detectionZone: Phaser.Geom.Rectangle,
     direction: number,
     gridX: number,
-    gridY: number
+    gridY: number,
+    detectionZoneLength: number
 ) {
     const detectionZoneSize = TILE_SIZE / 2;
-    const detectionZoneLength = TILE_SIZE / 10;
 
     if (direction === NORTH) {
         detectionZone.width = detectionZoneSize;

@@ -197,7 +197,7 @@ export class MainScene extends Scene {
         const riverSpeed = 1;
         for (let i = this.items.length - 1; i >= 0; i--) {
             const item = this.items[i];
-            if (item.getY() >= 0) {
+            if (item.getY() >= -TILE_SIZE/2) {
                 continue;
             }
 

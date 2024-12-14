@@ -1,6 +1,21 @@
 import {DEBUG, DEBUG_DEPTH, ITEM_DEPTH, TILE_SIZE} from "./properties.js";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
 
 const DETECTOR_SIZE = TILE_SIZE / 10;
 
@@ -8,6 +23,7 @@ export abstract class GameItem {
     abstract getPrice(): number;
     abstract paint(): void;
     abstract getDetectionZones(): Phaser.Geom.Rectangle[];
+    abstract getItemDetectionZone(): Phaser.Geom.Rectangle;
     abstract clear(): void;
     abstract moveTo(x: number, y: number): void;
     abstract getX(): number;
@@ -16,12 +32,15 @@ export abstract class GameItem {
 }
 
 abstract class BasicItem extends GameItem {
+    private readonly itemDetectionZoneMargin = TILE_SIZE / 5;
+
     x: number;
     y: number;
     width: number;
     height: number;
     verticalDetectionZone: Phaser.Geom.Rectangle;
     horizontalDetectionZone: Phaser.Geom.Rectangle;
+    itemDetectionZone: Phaser.Geom.Rectangle;
     debugGraphics: Phaser.GameObjects.Graphics;
     image: Phaser.GameObjects.Image;
     price: number;
@@ -51,7 +70,19 @@ abstract class BasicItem extends GameItem {
             this.width,
             DETECTOR_SIZE
         );
+
+        this.itemDetectionZone = new Phaser.Geom.Rectangle(
+            x + this.itemDetectionZoneMargin,
+            y + this.itemDetectionZoneMargin,
+            TILE_SIZE - (this.itemDetectionZoneMargin * 2),
+            TILE_SIZE - (this.itemDetectionZoneMargin * 2),
+        );
+
         this.debugGraphics = scene.add.graphics();
+    }
+
+    getItemDetectionZone(): Phaser.Geom.Rectangle {
+        return this.itemDetectionZone;
     }
 
     getDetectionZones(): Phaser.Geom.Rectangle[] {
@@ -78,6 +109,9 @@ abstract class BasicItem extends GameItem {
 
         this.debugGraphics.x = this.x;
         this.debugGraphics.y = this.y;
+
+        this.itemDetectionZone.x = this.x + this.itemDetectionZoneMargin;
+        this.itemDetectionZone.y = this.y + this.itemDetectionZoneMargin;
     }
 
     paint() {
@@ -95,6 +129,14 @@ abstract class BasicItem extends GameItem {
                     detectionZone.height
                 );
             });
+
+            this.debugGraphics.lineStyle(1, 0xff00ff, 1);
+            this.debugGraphics.strokeRect(
+                this.itemDetectionZone.x - this.x,
+                this.itemDetectionZone.y - this.y,
+                this.itemDetectionZone.width,
+                this.itemDetectionZone.height
+            );
         }
     }
 
@@ -112,16 +154,7 @@ abstract class BasicItem extends GameItem {
     }
 
     areDetectionZonesOverlapping(gameItem: GameItem): boolean {
-        for (let i = 0; i < this.getDetectionZones().length; i++) {
-            const thisDetectionZone = this.getDetectionZones()[i];
-            for (let j = 0; j < gameItem.getDetectionZones().length; j++) {
-                const gameItemDetectionZone = gameItem.getDetectionZones()[j];
-                if (Phaser.Geom.Intersects.RectangleToRectangle(thisDetectionZone, gameItemDetectionZone)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return Phaser.Geom.Intersects.RectangleToRectangle(gameItem.getItemDetectionZone(), this.getItemDetectionZone());
     }
 
     getPrice(): number {

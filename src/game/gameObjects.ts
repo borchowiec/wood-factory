@@ -13,7 +13,7 @@ import {
     CONVEYOR_BELT_RIGHT_ID,
     getGameObjectById,
     LOG_PRODUCER_ID,
-    SAW_MILL_ID, WOODEN_NAILS_WORKSHOP_ID,
+    SAW_MILL_ID, SPLITTER_ID, WOODEN_NAILS_WORKSHOP_ID,
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
 import {BeamItem, GameItem, LogItem, NailItem, PlankItem} from "./gameItems";
@@ -116,6 +116,8 @@ export function createObject(id, scene) {
             return new Workshop(-5, -5, scene);
         case WOODEN_NAILS_WORKSHOP_ID:
             return new WoodenNailsWorkshop(-5, -5, scene);
+        case SPLITTER_ID:
+            return new Splitter(-5, -5, scene);
     }
 }
 
@@ -1118,4 +1120,162 @@ class WoodenNailsWorkshop extends InOutObject {
     isInputItemAcceptable(item: GameItem): boolean {
         return item instanceof PlankItem;
     }
+}
+
+class Splitter extends BasicObject {
+    private inDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
+        0,
+        0,
+        0,
+        0
+    );
+    private outLeftDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
+        0,
+        0,
+        0,
+        0
+    );
+    private outRightDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
+        0,
+        0,
+        0,
+        0
+    );
+    private usedLeftLastTime = false;
+
+    constructor(gridX, gridY, scene) {
+        super(
+            gridX,
+            gridY,
+            scene,
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: 0}
+            ]
+        );
+    }
+
+    updateDetectionZones() {
+        const detectorSize = TILE_SIZE / 10;
+
+        if (this.direction === EAST || this.direction === WEST) {
+            this.inDetectionZone.width = detectorSize;
+            this.inDetectionZone.height = TILE_SIZE;
+            this.inDetectionZone.y = this.gridY * TILE_SIZE;
+
+            this.outLeftDetectionZone.width = TILE_SIZE;
+            this.outLeftDetectionZone.height = detectorSize;
+            this.outLeftDetectionZone.x = this.gridX * TILE_SIZE;
+
+            this.outRightDetectionZone.width = TILE_SIZE;
+            this.outRightDetectionZone.height = detectorSize;
+            this.outRightDetectionZone.x = this.gridX * TILE_SIZE;
+        } else {
+            this.inDetectionZone.width = TILE_SIZE;
+            this.inDetectionZone.height = detectorSize;
+            this.inDetectionZone.x = this.gridX * TILE_SIZE;
+
+            this.outLeftDetectionZone.width = detectorSize;
+            this.outLeftDetectionZone.height = TILE_SIZE;
+            this.outLeftDetectionZone.y = this.gridY * TILE_SIZE;
+
+            this.outRightDetectionZone.width = detectorSize;
+            this.outRightDetectionZone.height = TILE_SIZE;
+            this.outRightDetectionZone.y = this.gridY * TILE_SIZE;
+        }
+
+        if (this.direction === NORTH) {
+            this.inDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+            this.outLeftDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+            this.outRightDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+        } else if (this.direction === EAST) {
+            this.inDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+            this.outLeftDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+            this.outRightDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+        } else if (this.direction === SOUTH) {
+            this.inDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+            this.outLeftDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+            this.outRightDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+        } else if (this.direction === WEST) {
+            this.inDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+            this.outLeftDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+            this.outRightDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+        }
+    }
+
+    getDetectionZones(): Phaser.Geom.Rectangle[] {
+        return [this.inDetectionZone, this.outRightDetectionZone, this.outLeftDetectionZone];
+    }
+
+    getId(): number {
+        return SPLITTER_ID;
+    }
+
+    update(items: GameItem[]): void {
+        const itemIn = getFirstItemThatOverlapsWithRectangle(this.inDetectionZone, items);
+        if (!itemIn) {
+            return;
+        }
+
+        const isLeftOutOccupied = getFirstItemThatOverlapsWithRectangle(this.outLeftDetectionZone, items) !== null;
+        const isRightOutOccupied = getFirstItemThatOverlapsWithRectangle(this.outRightDetectionZone, items) !== null;
+
+        if (isLeftOutOccupied && isRightOutOccupied) {
+            return;
+        }
+
+        if (this.usedLeftLastTime) {
+            if (!isRightOutOccupied) {
+                this.moveItemToRight(itemIn);
+                this.usedLeftLastTime = false;
+            } else {
+                this.moveItemToLeft(itemIn);
+            }
+        } else {
+            if (!isLeftOutOccupied) {
+                this.moveItemToLeft(itemIn);
+                this.usedLeftLastTime = true;
+            } else {
+                this.moveItemToRight(itemIn);
+            }
+        }
+    }
+
+    moveItemToLeft(item: GameItem): void {
+        let x = this.outLeftDetectionZone.x;
+        let y = this.outLeftDetectionZone.y;
+        if (this.direction === EAST) {
+            y -= TILE_SIZE - this.outLeftDetectionZone.height;
+        } else if (this.direction === NORTH) {
+            x -= TILE_SIZE - this.outLeftDetectionZone.width;
+        }
+
+        item.moveTo(x, y);
+    }
+
+    moveItemToRight(item: GameItem): void {
+        let x = this.outRightDetectionZone.x;
+        let y = this.outRightDetectionZone.y;
+        if (this.direction === WEST) {
+            y -= TILE_SIZE - this.outRightDetectionZone.height;
+        } else if (this.direction === SOUTH) {
+            x -= TILE_SIZE - this.outRightDetectionZone.width;
+        }
+
+        item.moveTo(x, y);
+    }
+
+    upgrade(details: object) {
+    }
+}
+
+function getFirstItemThatOverlapsWithRectangle(rect: Phaser.Geom.Rectangle, items: GameItem[]): GameItem | null {
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.areDetectionZonesOverlappingWithRect(rect)) {
+            return item;
+        }
+    }
+
+    return null;
 }

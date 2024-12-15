@@ -106,6 +106,10 @@ export const LOG_PRODUCER_ID = 3;
 export const SAW_MILL_ID = 4;
 export const WORKSHOP_ID = 5;
 export const WOODEN_NAILS_WORKSHOP_ID = 6;
+export const SPLITTER_ID = 7;
+export const MERGER_ID = 8;
+export const STORAGE_ID = 9;
+export const SORTER_ID = 10;
 
 const conveyorBeltUpgrades = [
     {price: 0, details: {speed: 0.25}},
@@ -157,6 +161,10 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(400, {productionTimeMs: 7500})
         .withUpgrade(800, {productionTimeMs: 5000})
         .withUpgrade(1200, {productionTimeMs: 2500})
+        .build(),
+    new GameObjectDataBuilder(SPLITTER_ID, "splitter", "Splitter", 500)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {})
         .build(),
 ];
 

@@ -29,6 +29,7 @@ export abstract class GameItem {
     abstract getX(): number;
     abstract getY(): number;
     abstract areDetectionZonesOverlapping(gameItem: GameItem): boolean;
+    abstract areDetectionZonesOverlappingWithRect(rect: Phaser.Geom.Rectangle): boolean;
 }
 
 abstract class BasicItem extends GameItem {
@@ -159,6 +160,16 @@ abstract class BasicItem extends GameItem {
 
     getPrice(): number {
         return this.price;
+    }
+
+    areDetectionZonesOverlappingWithRect(rect: Phaser.Geom.Rectangle): boolean {
+        const detectionZones = this.getDetectionZones();
+        for (let i = 0; i < detectionZones.length; i++) {
+            if (Phaser.Geom.Rectangle.Overlaps(detectionZones[i], rect)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

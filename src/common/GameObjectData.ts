@@ -166,6 +166,10 @@ export const gameObjects: GameObjectData[] = [
         .withSpritesDirName("conveyorBelt")
         .withUpgrade(0, {})
         .build(),
+    new GameObjectDataBuilder(MERGER_ID, "merger", "Merger", 500)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {})
+        .build(),
 ];
 
 export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

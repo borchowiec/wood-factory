@@ -13,10 +13,15 @@ import {
     CONVEYOR_BELT_RIGHT_ID,
     getGameObjectById,
     LOG_PRODUCER_ID, MERGER_ID,
-    SAW_MILL_ID, SPLITTER_ID, WOODEN_NAILS_WORKSHOP_ID,
+    SAW_MILL_ID, SPLITTER_ID, STORAGE_ID, WOODEN_NAILS_WORKSHOP_ID,
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
 import {BeamItem, GameItem, LogItem, NailItem, PlankItem} from "./gameItems";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
@@ -127,6 +132,8 @@ export function createObject(id, scene) {
             return new Splitter(-5, -5, scene);
         case MERGER_ID:
             return new Merger(-5, -5, scene);
+        case STORAGE_ID:
+            return new Storage(-5, -5, scene);
     }
 }
 
@@ -1419,6 +1426,126 @@ class Merger extends BasicObject {
     }
 
     upgrade(details: object) {
+    }
+}
+
+class Storage extends BasicObject {
+    private inDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
+        0,
+        0,
+        0,
+        0
+    );
+    private outDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
+        0,
+        0,
+        0,
+        0
+    );
+    private capacity: number;
+    private storedItems = [];
+    private progressBar: ProgressBar;
+
+    constructor(gridX, gridY, scene) {
+        super(
+            gridX,
+            gridY,
+            scene,
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0}
+            ]
+        );
+        this.capacity = getGameObjectById(this.getId()).upgrades[0].details.capacity;
+        this.progressBar = new ProgressBar(this.scene, gridX * TILE_SIZE, gridY * TILE_SIZE, TILE_SIZE);
+    }
+
+    getId(): number {
+        return STORAGE_ID;
+    }
+
+    getDetectionZones(): Phaser.Geom.Rectangle[] {
+        return [this.outDetectionZone, this.inDetectionZone];
+    }
+
+    updateDetectionZones() {
+        const detectorSize = TILE_SIZE / 10;
+
+        if (this.direction === EAST || this.direction === WEST) {
+            this.inDetectionZone.width = detectorSize;
+            this.inDetectionZone.height = TILE_SIZE;
+            this.inDetectionZone.y = this.gridY * TILE_SIZE;
+
+            this.outDetectionZone.width = detectorSize;
+            this.outDetectionZone.height = TILE_SIZE;
+            this.outDetectionZone.y = this.gridY * TILE_SIZE;
+        } else {
+            this.inDetectionZone.width = TILE_SIZE;
+            this.inDetectionZone.height = detectorSize;
+            this.inDetectionZone.x = this.gridX * TILE_SIZE;
+
+            this.outDetectionZone.width = TILE_SIZE;
+            this.outDetectionZone.height = detectorSize;
+            this.outDetectionZone.x = this.gridX * TILE_SIZE;
+        }
+
+        if (this.direction === NORTH) {
+            this.inDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+            this.outDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+        } else if (this.direction === EAST) {
+            this.inDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+            this.outDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+        } else if (this.direction === SOUTH) {
+            this.inDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+            this.outDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+        } else if (this.direction === WEST) {
+            this.inDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+            this.outDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+        }
+
+        this.progressBar.move(this.gridX * TILE_SIZE, this.gridY * TILE_SIZE);
+    }
+
+
+    update(items: GameItem[]): void {
+        if (this.storedItems.length < this.capacity) {
+            const item = getFirstItemThatOverlapsWithRectangle(this.inDetectionZone, items);
+            if (item) {
+                item.moveTo(TILE_SIZE*GRID_WIDTH*2, TILE_SIZE*GRID_HEIGHT*2);
+                this.storedItems.push(item);
+                this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
+            }
+        }
+
+        if (this.storedItems.length > 0 && getFirstItemThatOverlapsWithRectangle(this.outDetectionZone, items) === null) {
+            const item = this.storedItems.shift();
+            let x = this.outDetectionZone.x;
+            let y = this.outDetectionZone.y;
+            if (this.direction === WEST) {
+                x -= TILE_SIZE - this.outDetectionZone.width;
+            } else if (this.direction === NORTH) {
+                y -= TILE_SIZE - this.outDetectionZone.height;
+            }
+            item.moveTo(x, y);
+            this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
+        }
+    }
+
+    upgrade(details: object) {
+        this.capacity = details.capacity;
+        this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
+    }
+
+    setVisible(isVisible: boolean) {
+        super.setVisible(isVisible);
+        this.progressBar.setVisible(isVisible);
+    }
+
+
+    clear() {
+        super.clear();
+        this.progressBar.clear();
     }
 }
 

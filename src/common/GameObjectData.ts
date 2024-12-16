@@ -170,6 +170,12 @@ export const gameObjects: GameObjectData[] = [
         .withSpritesDirName("conveyorBelt")
         .withUpgrade(0, {})
         .build(),
+    new GameObjectDataBuilder(STORAGE_ID, "storage", "Storage", 1500)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {capacity: 15})
+        .withUpgrade(1000, {capacity: 30})
+        .withUpgrade(2000, {capacity: 60})
+        .build(),
 ];
 
 export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

@@ -21,7 +21,8 @@ export const getFooter = (
     setCurrentObject: (object: GameObjectData) => void,
     mainScene: MainScene,
     currentObject?: GameObjectData,
-    upgradeDetails: UpgradeDetails
+    upgradeDetails: UpgradeDetails,
+    hasModifyButton: boolean
 ) => {
     switch (footerType) {
         case FooterType.ACTIONS:
@@ -42,6 +43,7 @@ export const getFooter = (
             />;
         case FooterType.OBJECT_ACTIONS:
             return <ObjectActionsFooter
+                hasModifyButton={hasModifyButton}
                 setFooter={setFooter}
                 mainScene={mainScene}
                 upgradeDetails={upgradeDetails}

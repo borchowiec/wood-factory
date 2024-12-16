@@ -1,5 +1,5 @@
 import React from "react";
-import {IonButton, IonFooter, IonIcon} from "@ionic/react";
+import {IonButton, IonIcon} from "@ionic/react";
 import {checkmarkOutline, closeOutline, refreshOutline} from "ionicons/icons";
 import {FooterType} from "./Footer";
 import {MainScene} from "../../../game/MainScene.js";

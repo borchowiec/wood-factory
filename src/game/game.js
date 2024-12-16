@@ -1,4 +1,4 @@
-import {Game, AUTO, Scale} from "phaser";
+import {AUTO, Game, Scale} from "phaser";
 import {MainScene} from "./MainScene.js";
 
 export function launch() {

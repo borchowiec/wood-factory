@@ -1,23 +1,40 @@
 import {DEBUG, DEBUG_DEPTH, ITEM_DEPTH, TILE_SIZE} from "./properties.js";
 import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
 
 const DETECTOR_SIZE = TILE_SIZE / 10;
+
+export class GameItemData {
+    readonly id: number;
+    readonly imageName: string;
+    readonly price: number;
+
+    constructor(id: number, imageName: string, price: number) {
+        this.id = id;
+        this.imageName = imageName;
+        this.price = price;
+    }
+}
+
+export const LOG_ID = 1;
+const PLANK_ID = 2;
+const BEAM_ID = 3;
+const NAIL_ID = 4;
+
+const gameItemsData = [
+    new GameItemData(LOG_ID, "log", 10),
+    new GameItemData(PLANK_ID, "plank", 25),
+    new GameItemData(BEAM_ID, "beam", 25),
+    new GameItemData(NAIL_ID, "nail", 7),
+]
+
+export function getGameItemDataById(id: number): GameItemData {
+    return gameItemsData.find((data) => data.id === id);
+}
+
+export function getNextGameItemData(id: number): GameItemData {
+    const index = gameItemsData.findIndex((data) => data.id === id);
+    return gameItemsData[(index + 1) % gameItemsData.length];
+}
 
 export abstract class GameItem {
     abstract getPrice(): number;
@@ -30,10 +47,12 @@ export abstract class GameItem {
     abstract getY(): number;
     abstract areDetectionZonesOverlapping(gameItem: GameItem): boolean;
     abstract areDetectionZonesOverlappingWithRect(rect: Phaser.Geom.Rectangle): boolean;
+    abstract getId(): number;
 }
 
 abstract class BasicItem extends GameItem {
     private readonly itemDetectionZoneMargin = TILE_SIZE / 5;
+    private readonly id;
 
     x: number;
     y: number;
@@ -46,14 +65,18 @@ abstract class BasicItem extends GameItem {
     image: Phaser.GameObjects.Image;
     price: number;
 
-    protected constructor(x, y, imageName, scene: Phaser.Scene, price) {
+    protected constructor(x, y, id: number, scene: Phaser.Scene) {
         super();
 
-        this.image = scene.add.image(x, y, imageName);
+        const itemData = getGameItemDataById(id);
+
+        this.id = id;
+
+        this.image = scene.add.image(x, y, itemData.imageName);
         this.image.setOrigin(0, 0);
         this.image.setDepth(ITEM_DEPTH);
 
-        this.price = price;
+        this.price = itemData.price;
 
         this.width = this.image.width;
         this.height = this.image.height;
@@ -80,6 +103,10 @@ abstract class BasicItem extends GameItem {
         );
 
         this.debugGraphics = scene.add.graphics();
+    }
+
+    getId(): number {
+        return this.id;
     }
 
     getItemDetectionZone(): Phaser.Geom.Rectangle {
@@ -175,25 +202,25 @@ abstract class BasicItem extends GameItem {
 
 export class LogItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "log", scene, 10);
+        super(x, y, LOG_ID, scene);
     }
 }
 
 export class PlankItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "plank", scene, 25);
+        super(x, y, PLANK_ID, scene);
     }
 }
 
 
 export class BeamItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "beam", scene, 25);
+        super(x, y, BEAM_ID, scene);
     }
 }
 
 export class NailItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
-        super(x, y, "nail", scene, 7);
+        super(x, y, NAIL_ID, scene);
     }
 }

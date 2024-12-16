@@ -1,6 +1,6 @@
 import React, {useState} from "react";
-import {IonButton, IonFooter, IonIcon, IonImg} from "@ionic/react";
-import {backspaceOutline, chevronBackOutline, chevronForwardOutline, storefront} from "ionicons/icons";
+import {IonButton, IonIcon} from "@ionic/react";
+import {backspaceOutline, chevronBackOutline, chevronForwardOutline} from "ionicons/icons";
 import {FooterType} from "./Footer";
 import {GameObjectData, gameObjects} from "../../../common/GameObjectData";
 import {MainScene} from "../../../game/MainScene.js";

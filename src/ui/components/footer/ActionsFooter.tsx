@@ -1,5 +1,5 @@
 import React from "react";
-import {IonButton, IonFooter, IonIcon} from "@ionic/react";
+import {IonButton, IonIcon} from "@ionic/react";
 import {storefront} from "ionicons/icons";
 import {FooterType} from "./Footer";
 import {BaseFooter} from "./BaseFooter";

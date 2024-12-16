@@ -176,6 +176,10 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(1000, {capacity: 30})
         .withUpgrade(2000, {capacity: 60})
         .build(),
+    new GameObjectDataBuilder(SORTER_ID, "sorter", "Sorter", 1500)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {})
+        .build(),
 ];
 
 export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

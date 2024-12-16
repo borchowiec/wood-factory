@@ -13,6 +13,7 @@ const GamePage: React.FC = () => {
 
     const [money, setMoney] = useState(0);
     const [upgradeDetails, setUpgradeDetails] = useState({isMaxLevel: false, currentLevel: 1, upgradePrice: 0} as UpgradeDetails);
+    const [hasModifyButton, setHasModifyButton] = useState(false);
     const [currentObject, setCurrentObject] = useState(undefined as GameObjectData);
     const [errorMessage, setErrorMessage] = useState(undefined as string);
 
@@ -35,6 +36,7 @@ const GamePage: React.FC = () => {
         const handleMovingExistingObject = event => {
             setFooter(FooterType.OBJECT_ACTIONS);
             setUpgradeDetails(event.detail.upgradeDetails);
+            setHasModifyButton(event.detail.hasModifyButton);
         }
 
         window.addEventListener('moneyUpdate', handleMoneyUpdate);
@@ -117,7 +119,8 @@ const GamePage: React.FC = () => {
                             setCurrentObject,
                             getMainScene(),
                             currentObject,
-                            upgradeDetails
+                            upgradeDetails,
+                            hasModifyButton
                         )
                         : <></>
                 }

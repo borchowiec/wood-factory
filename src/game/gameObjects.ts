@@ -12,23 +12,26 @@ import {
     CONVEYOR_BELT_LEFT_ID,
     CONVEYOR_BELT_RIGHT_ID,
     getGameObjectById,
-    LOG_PRODUCER_ID, MERGER_ID,
-    SAW_MILL_ID, SPLITTER_ID, STORAGE_ID, WOODEN_NAILS_WORKSHOP_ID,
+    LOG_PRODUCER_ID,
+    MERGER_ID,
+    SAW_MILL_ID,
+    SORTER_ID,
+    SPLITTER_ID,
+    STORAGE_ID,
+    WOODEN_NAILS_WORKSHOP_ID,
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
-import {BeamItem, GameItem, LogItem, NailItem, PlankItem} from "./gameItems";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
+import {
+    BeamItem,
+    GameItem,
+    GameItemData,
+    getGameItemDataById,
+    getNextGameItemData,
+    LOG_ID,
+    LogItem,
+    NailItem,
+    PlankItem
+} from "./gameItems";
 import * as Phaser from "phaser";
 
 const NORTH = 0;
@@ -134,6 +137,8 @@ export function createObject(id, scene) {
             return new Merger(-5, -5, scene);
         case STORAGE_ID:
             return new Storage(-5, -5, scene);
+        case SORTER_ID:
+            return new Sorter(-5, -5, scene);
     }
 }
 
@@ -169,6 +174,8 @@ export abstract class GameObject {
     abstract getCurrentLevel(): number;
 
     abstract setLevel(level: number);
+    abstract hasModifyButton(): boolean;
+    abstract modify(): void;
 }
 
 abstract class BasicObject extends GameObject {
@@ -245,6 +252,14 @@ abstract class BasicObject extends GameObject {
 
         this.debugGraphics = scene.add.graphics();
         this.updateVisibility();
+    }
+
+
+    hasModifyButton(): boolean {
+        return false;
+    }
+
+    modify() {
     }
 
     initializePlacementGraphics(placementGraphics: Phaser.GameObjects.Graphics, color: number) {
@@ -1512,7 +1527,7 @@ class Storage extends BasicObject {
         if (this.storedItems.length < this.capacity) {
             const item = getFirstItemThatOverlapsWithRectangle(this.inDetectionZone, items);
             if (item) {
-                item.moveTo(TILE_SIZE*GRID_WIDTH*2, TILE_SIZE*GRID_HEIGHT*2);
+                item.moveTo(TILE_SIZE * GRID_WIDTH * 2, TILE_SIZE * GRID_HEIGHT * 2);
                 this.storedItems.push(item);
                 this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
             }
@@ -1546,6 +1561,205 @@ class Storage extends BasicObject {
     clear() {
         super.clear();
         this.progressBar.clear();
+    }
+}
+
+class Sorter extends BasicObject {
+    private inDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(0, 0, 0, 0);
+    private outSortedDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(0, 0, 0, 0);
+    private outUnsortedDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(0, 0, 0, 0);
+
+    private item = getGameItemDataById(LOG_ID);
+    private itemImage: Phaser.GameObjects.Image;
+
+    constructor(gridX, gridY, scene) {
+        super(
+            gridX,
+            gridY,
+            scene,
+            [
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0},
+                {gridX: -1, gridY: 0},
+            ]
+        );
+
+        this.itemImage = scene.add.image(0, 0, this.item.imageName);
+        this.itemImage.setOrigin(0, 0);
+        this.itemImage.setDepth(OBJECT_DEPTH + 1);
+        this.itemImage.x = this.gridX * TILE_SIZE;
+        this.itemImage.y = (this.gridY-1) * TILE_SIZE;
+    }
+
+    getDetectionZones(): Phaser.Geom.Rectangle[] {
+        return [this.inDetectionZone, this.outSortedDetectionZone, this.outUnsortedDetectionZone];
+    }
+
+    updateDetectionZones() {
+        const detectorSize = TILE_SIZE / 10;
+
+        if (this.direction === EAST) {
+            this.inDetectionZone.width = detectorSize;
+            this.inDetectionZone.height = TILE_SIZE;
+            this.inDetectionZone.y = this.gridY * TILE_SIZE;
+            this.inDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+
+            this.outUnsortedDetectionZone.width = detectorSize;
+            this.outUnsortedDetectionZone.height = TILE_SIZE;
+            this.outUnsortedDetectionZone.y = this.gridY * TILE_SIZE;
+            this.outUnsortedDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+
+            this.outSortedDetectionZone.width = TILE_SIZE;
+            this.outSortedDetectionZone.height = detectorSize;
+            this.outSortedDetectionZone.x = this.gridX * TILE_SIZE;
+            this.outSortedDetectionZone.y = (this.gridY - 1) * TILE_SIZE - detectorSize;
+        } else if (this.direction === SOUTH) {
+            this.inDetectionZone.width = TILE_SIZE;
+            this.inDetectionZone.height = detectorSize;
+            this.inDetectionZone.x = this.gridX * TILE_SIZE;
+            this.inDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+
+            this.outUnsortedDetectionZone.width = TILE_SIZE;
+            this.outUnsortedDetectionZone.height = detectorSize;
+            this.outUnsortedDetectionZone.x = this.gridX * TILE_SIZE;
+            this.outUnsortedDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+
+            this.outSortedDetectionZone.width = detectorSize;
+            this.outSortedDetectionZone.height = TILE_SIZE;
+            this.outSortedDetectionZone.x = (this.gridX + 2) * TILE_SIZE;
+            this.outSortedDetectionZone.y = this.gridY * TILE_SIZE;
+        } else if (this.direction === WEST) {
+            this.inDetectionZone.width = detectorSize;
+            this.inDetectionZone.height = TILE_SIZE;
+            this.inDetectionZone.y = this.gridY * TILE_SIZE;
+            this.inDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
+
+            this.outUnsortedDetectionZone.width = detectorSize;
+            this.outUnsortedDetectionZone.height = TILE_SIZE;
+            this.outUnsortedDetectionZone.y = this.gridY * TILE_SIZE;
+            this.outUnsortedDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
+
+            this.outSortedDetectionZone.width = TILE_SIZE;
+            this.outSortedDetectionZone.height = detectorSize;
+            this.outSortedDetectionZone.x = this.gridX * TILE_SIZE;
+            this.outSortedDetectionZone.y = (this.gridY + 2) * TILE_SIZE;
+        } else if (this.direction === NORTH) {
+            this.inDetectionZone.width = TILE_SIZE;
+            this.inDetectionZone.height = detectorSize;
+            this.inDetectionZone.x = this.gridX * TILE_SIZE;
+            this.inDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
+
+            this.outUnsortedDetectionZone.width = TILE_SIZE;
+            this.outUnsortedDetectionZone.height = detectorSize;
+            this.outUnsortedDetectionZone.x = this.gridX * TILE_SIZE;
+            this.outUnsortedDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
+
+            this.outSortedDetectionZone.width = detectorSize;
+            this.outSortedDetectionZone.height = TILE_SIZE;
+            this.outSortedDetectionZone.x = (this.gridX - 1) * TILE_SIZE - detectorSize;
+            this.outSortedDetectionZone.y = this.gridY * TILE_SIZE;
+        }
+    }
+
+    getId(): number {
+        return SORTER_ID;
+    }
+
+    update(items: GameItem[]): void {
+        const inItem = getFirstItemThatOverlapsWithRectangle(this.inDetectionZone, items);
+        if (!inItem) {
+            return;
+        }
+
+        if (inItem.getId() === this.item.id) {
+            if (!getFirstItemThatOverlapsWithRectangle(this.outSortedDetectionZone, items)) {
+                this.moveItemToSorted(inItem);
+            }
+            return;
+        }
+
+        if (!getFirstItemThatOverlapsWithRectangle(this.outUnsortedDetectionZone, items)) {
+            this.moveItemToUnsorted(inItem);
+        }
+    }
+
+    moveItemToSorted(item: GameItem) {
+        let x = this.outSortedDetectionZone.x;
+        let y = this.outSortedDetectionZone.y;
+        if (this.direction === EAST) {
+            y -= TILE_SIZE - this.outSortedDetectionZone.height;
+        } else if (this.direction === SOUTH) {
+            x -= TILE_SIZE - this.outSortedDetectionZone.width;
+        }
+
+        item.moveTo(x, y);
+    }
+
+    moveItemToUnsorted(item: GameItem) {
+        let x = this.outUnsortedDetectionZone.x;
+        let y = this.outUnsortedDetectionZone.y;
+        if (this.direction === NORTH) {
+            y -= TILE_SIZE - this.outUnsortedDetectionZone.height;
+        } else if (this.direction === WEST) {
+            x -= TILE_SIZE - this.outUnsortedDetectionZone.width;
+        }
+
+        item.moveTo(x, y);
+    }
+
+    upgrade(details: object) {
+    }
+
+
+    setVisible(isVisible: boolean) {
+        super.setVisible(isVisible);
+        this.itemImage.setVisible(isVisible);
+    }
+
+    rotate() {
+        super.rotate();
+        this.updateItemImagePosition();
+    }
+
+
+    move(gridX: number, gridY: number) {
+        super.move(gridX, gridY);
+        this.updateItemImagePosition();
+    }
+
+    updateItemImagePosition() {
+        if (this.direction === EAST) {
+            this.itemImage.x = this.gridX * TILE_SIZE;
+            this.itemImage.y = (this.gridY-1) * TILE_SIZE;
+        } else if (this.direction === SOUTH) {
+            this.itemImage.x = (this.gridX+1) * TILE_SIZE;
+            this.itemImage.y = this.gridY * TILE_SIZE;
+        } else if (this.direction === WEST) {
+            this.itemImage.x = this.gridX * TILE_SIZE;
+            this.itemImage.y = (this.gridY+1) * TILE_SIZE;
+        } else if (this.direction === NORTH) {
+            this.itemImage.x = (this.gridX-1) * TILE_SIZE;
+            this.itemImage.y = this.gridY * TILE_SIZE;
+        }
+    }
+
+    hasModifyButton(): boolean {
+        return true;
+    }
+
+    modify() {
+        this.setItem(getNextGameItemData(this.item.id));
+    }
+
+    copy(): GameObject {
+        const gameObject = super.copy() as Sorter;
+        gameObject.setItem(this.item);
+        return gameObject;
+    }
+
+    setItem(item: GameItemData) {
+        this.item = item;
+        this.itemImage.setTexture(item.imageName);
     }
 }
 

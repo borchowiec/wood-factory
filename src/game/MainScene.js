@@ -170,6 +170,7 @@ export class MainScene extends Scene {
 
         const movingExistingObjectEvent = new CustomEvent("movingExistingObject", {
             detail: {
+                hasModifyButton: this.selectedObject.hasModifyButton(),
                 upgradeDetails: {
                     isMaxLevel: this.selectedObject.isMaxLevel(),
                     upgradePrice: this.selectedObject.isMaxLevel() ? 0 : this.selectedObject.getUpgradePrice(),
@@ -178,6 +179,12 @@ export class MainScene extends Scene {
             },
         });
         window.dispatchEvent(movingExistingObjectEvent);
+    }
+
+    modifySelectedItem() {
+        if (this.selectedObject) {
+            this.selectedObject.modify();
+        }
     }
 
     initializeGrid(gridWidth, gridHeight) {

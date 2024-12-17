@@ -168,7 +168,9 @@ export const gameObjects: GameObjectData[] = [
         .withSpriteAnimationFrames([0, 1, 2, 3])
         .build(),
     new GameObjectDataBuilder(MERGER_ID, "merger", "Merger", 500)
-        .withSpritesDirName("conveyorBelt")
+        .withSpriteFrameWidth(128)
+        .withSpriteFrameHeight(128)
+        .withSpriteAnimationFrames([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
         .withUpgrade(0, {})
         .build(),
     new GameObjectDataBuilder(STORAGE_ID, "storage", "Storage", 1500)

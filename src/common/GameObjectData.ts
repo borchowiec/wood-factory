@@ -182,7 +182,9 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(2000, {capacity: 60})
         .build(),
     new GameObjectDataBuilder(SORTER_ID, "sorter", "Sorter", 1500)
-        .withSpritesDirName("conveyorBelt")
+        .withIconFileName("sprite.png")
+        .withSpriteFrameWidth(128)
+        .withSpriteFrameHeight(128)
         .withUpgrade(0, {})
         .build(),
 ];

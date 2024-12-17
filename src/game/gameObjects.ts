@@ -33,6 +33,15 @@ import {
     PlankItem
 } from "./gameItems";
 import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import {isVisible} from "@testing-library/user-event/utils/misc/isVisible";
 
 const NORTH = 0;
 const EAST = 1;
@@ -1760,6 +1769,12 @@ class Sorter extends BasicObject {
     setItem(item: GameItemData) {
         this.item = item;
         this.itemImage.setTexture(item.imageName);
+    }
+
+
+    clear() {
+        super.clear();
+        this.itemImage.destroy();
     }
 }
 

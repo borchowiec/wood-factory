@@ -1044,20 +1044,18 @@ class InOutInput {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
 
-            if (!this.isInputItemAcceptable(item)) {
+            if (!item.areDetectionZonesOverlappingWithRect(this.inDetectionZone)) {
                 continue;
             }
 
-            let detectionZones = item.getDetectionZones();
-            item.areDetectionZonesOverlappingWithRect(this.inDetectionZone);
-            for (let j = 0; j < detectionZones.length; j++) {
-                if (Phaser.Geom.Rectangle.Overlaps(detectionZones[j], this.inDetectionZone)) {
-                    this.numberOfItems++;
-                    this.scene.removeItem(item);
-                    this.progressBar.updateProgress(this.numberOfItems / this.goal * 100);
-                    return true;
-                }
+            this.scene.removeItem(item);
+            if (!this.isInputItemAcceptable(item)) {
+                return true;
             }
+
+            this.numberOfItems++;
+            this.progressBar.updateProgress(this.numberOfItems / this.goal * 100);
+            return true;
         }
         return false;
     }

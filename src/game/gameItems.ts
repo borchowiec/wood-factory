@@ -19,12 +19,20 @@ export const LOG_ID = 1;
 const PLANK_ID = 2;
 const BEAM_ID = 3;
 const NAIL_ID = 4;
+const SHEET_OF_PAPER_ID = 5;
+const CLOTH_ID = 6;
+const SAIL_ID = 7;
+const CHAIR_ID = 8;
 
 const gameItemsData = [
     new GameItemData(LOG_ID, "log", 10),
     new GameItemData(PLANK_ID, "plank", 25),
     new GameItemData(BEAM_ID, "beam", 25),
     new GameItemData(NAIL_ID, "nail", 7),
+    new GameItemData(SHEET_OF_PAPER_ID, "log"/*"sheetOfPaper"*/, 10),
+    new GameItemData(CLOTH_ID, "log"/*"cloth"*/, 50),
+    new GameItemData(SAIL_ID, "log"/*"sail"*/, 100),
+    new GameItemData(CHAIR_ID, "log"/*"chair"*/, 75),
 ]
 
 export function getGameItemDataById(id: number): GameItemData {
@@ -222,5 +230,27 @@ export class BeamItem extends BasicItem {
 export class NailItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
         super(x, y, NAIL_ID, scene);
+    }
+}
+
+export class SheetOfPaperItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, SHEET_OF_PAPER_ID, scene);
+    }
+}
+
+export class ClothItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, CLOTH_ID, scene);
+    }
+}
+export class SailItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, SAIL_ID, scene);
+    }
+}
+export class ChairItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, CHAIR_ID, scene);
     }
 }

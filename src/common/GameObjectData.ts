@@ -110,6 +110,11 @@ export const SPLITTER_ID = 7;
 export const MERGER_ID = 8;
 export const STORAGE_ID = 9;
 export const SORTER_ID = 10;
+export const PAPER_WORKSHOP_ID = 11;
+export const FABRIC_FACTORY_ID = 12;
+export const SAIL_FACTORY_ID = 13;
+export const CHAIR_FACTORY_ID = 14;
+
 
 const conveyorBeltUpgrades = [
     {price: 0, details: {speed: 0.25}},
@@ -186,6 +191,15 @@ export const gameObjects: GameObjectData[] = [
         .withSpriteFrameWidth(128)
         .withSpriteFrameHeight(128)
         .withUpgrade(0, {})
+        .build(),
+
+    new GameObjectDataBuilder(PAPER_WORKSHOP_ID, "paperWorkshop", "Paper Workshop", 1800)
+        .withSpritesDirName("conveyorBelt")
+        .withSpriteAnimationFrames([0])
+        .withUpgrade(0, {productionTimeMs: 15000})
+        .withUpgrade(400, {productionTimeMs: 10000})
+        .withUpgrade(800, {productionTimeMs: 7500})
+        .withUpgrade(1200, {productionTimeMs: 5000})
         .build(),
 ];
 

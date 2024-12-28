@@ -13,7 +13,7 @@ import {
     CONVEYOR_BELT_RIGHT_ID,
     getGameObjectById,
     LOG_PRODUCER_ID,
-    MERGER_ID,
+    MERGER_ID, PAPER_WORKSHOP_ID,
     SAW_MILL_ID,
     SORTER_ID,
     SPLITTER_ID,
@@ -30,7 +30,7 @@ import {
     LOG_ID,
     LogItem,
     NailItem,
-    PlankItem
+    PlankItem, SheetOfPaperItem
 } from "./gameItems";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
@@ -148,6 +148,8 @@ export function createObject(id, scene) {
             return new Storage(-5, -5, scene);
         case SORTER_ID:
             return new Sorter(-5, -5, scene);
+        case PAPER_WORKSHOP_ID:
+            return new PaperWorkshop(-5, -5, scene);
     }
 }
 
@@ -1775,6 +1777,28 @@ class Sorter extends BasicObject {
     clear() {
         super.clear();
         this.itemImage.destroy();
+    }
+}
+
+class PaperWorkshop extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene);
+    }
+
+    getId(): number {
+        return PAPER_WORKSHOP_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [
+            new SheetOfPaperItem(x, y, scene),
+            new SheetOfPaperItem(x + 3, y + 3, scene),
+            new SheetOfPaperItem(x + 3, y + 3, scene),
+        ];
+    }
+
+    isInputItemAcceptable(item: GameItem): boolean {
+        return item instanceof PlankItem;
     }
 }
 

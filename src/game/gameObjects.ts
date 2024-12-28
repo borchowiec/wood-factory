@@ -8,6 +8,7 @@ import {
     TILE_SIZE
 } from "./properties.js";
 import {
+    CHAIR_FACTORY_ID,
     CONVEYOR_BELT_ID,
     CONVEYOR_BELT_LEFT_ID,
     CONVEYOR_BELT_RIGHT_ID,
@@ -15,7 +16,7 @@ import {
     getGameObjectById,
     LOG_PRODUCER_ID,
     MERGER_ID,
-    PAPER_WORKSHOP_ID,
+    PAPER_WORKSHOP_ID, SAIL_FACTORY_ID,
     SAW_MILL_ID,
     SORTER_ID,
     SPLITTER_ID,
@@ -24,7 +25,7 @@ import {
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
 import {
-    BeamItem,
+    BeamItem, ChairItem,
     ClothItem,
     GameItem,
     GameItemData,
@@ -33,11 +34,10 @@ import {
     LOG_ID,
     LogItem,
     NailItem,
-    PlankItem,
+    PlankItem, SailItem,
     SheetOfPaperItem
 } from "./gameItems";
 import * as Phaser from "phaser";
-import {Simulate} from "react-dom/test-utils";
 
 const NORTH = 0;
 const EAST = 1;
@@ -148,6 +148,10 @@ export function createObject(id, scene) {
             return new PaperWorkshop(-5, -5, scene);
         case FABRIC_FACTORY_ID:
             return new FabricFactory(-5, -5, scene);
+        case SAIL_FACTORY_ID:
+            return new SailFactory(-5, -5, scene);
+        case CHAIR_FACTORY_ID:
+            return new ChairFactory(-5, -5, scene);
     }
 }
 
@@ -1078,15 +1082,12 @@ abstract class InOutObject extends BasicObject {
         0
     );
 
-    constructor(gridX, gridY, scene, inputsData: InOutInputData[]) {
+    constructor(gridX, gridY, scene, inputsData: InOutInputData[], tileOffsets) {
         super(
             gridX,
             gridY,
             scene,
-            [
-                {gridX: -1, gridY: 0},
-                {gridX: 0, gridY: 0}
-            ]
+            tileOffsets
         );
         this.inputs = inputsData.map(inputData => new InOutInput(this, inputData, scene));
         this.productionTimeMs = getGameObjectById(this.getId()).upgrades[0].details.productionTimeMs;
@@ -1209,9 +1210,13 @@ class SawMill extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable:(item) => item instanceof LogItem,
+                    isInputItemAcceptable: (item) => item instanceof LogItem,
                     goal: 1
                 },
+            ],
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: 0}
             ]
         );
     }
@@ -1233,9 +1238,13 @@ class Workshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable:(item) => item instanceof LogItem,
+                    isInputItemAcceptable: (item) => item instanceof LogItem,
                     goal: 1
                 },
+            ],
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: 0}
             ]
         );
     }
@@ -1257,9 +1266,13 @@ class WoodenNailsWorkshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable:(item) => item instanceof PlankItem,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
                     goal: 1
                 },
+            ],
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: 0}
             ]
         );
     }
@@ -1894,9 +1907,13 @@ class PaperWorkshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable:(item) => item instanceof PlankItem,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
                     goal: 1
                 },
+            ],
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: 0}
             ]
         );
     }
@@ -1922,9 +1939,13 @@ class FabricFactory extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable:(item) => item instanceof SheetOfPaperItem,
+                    isInputItemAcceptable: (item) => item instanceof SheetOfPaperItem,
                     goal: 4
                 },
+            ],
+            [
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: 0}
             ]
         );
     }
@@ -1935,6 +1956,80 @@ class FabricFactory extends InOutObject {
 
     produceItems(x: number, y: number, scene: Phaser.Scene) {
         return [new ClothItem(x, y, scene)];
+    }
+}
+
+class SailFactory extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof BeamItem,
+                    goal: 2
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof ClothItem,
+                    goal: 3
+                },
+            ],
+            [
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0}
+            ]
+        );
+    }
+
+    getId(): number {
+        return SAIL_FACTORY_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new SailItem(x, y, scene)];
+    }
+}
+
+class ChairFactory extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    goal: 2
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    goal: 6
+                },
+            ],
+            [
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0}
+            ]
+        );
+    }
+
+    getId(): number {
+        return CHAIR_FACTORY_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new ChairItem(x, y, scene)];
     }
 }
 

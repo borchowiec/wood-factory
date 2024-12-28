@@ -201,15 +201,31 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(800, {productionTimeMs: 7500})
         .withUpgrade(1200, {productionTimeMs: 5000})
         .build(),
-
     new GameObjectDataBuilder(FABRIC_FACTORY_ID, "fabricFactory", "Fabric Factory", 2500)
         .withSpritesDirName("conveyorBelt")
         .withSpriteAnimationFrames([0])
         .withUpgrade(0, {productionTimeMs: 15000})
-        .withUpgrade(400, {productionTimeMs: 10000})
-        .withUpgrade(800, {productionTimeMs: 7500})
-        .withUpgrade(1200, {productionTimeMs: 5000})
+        .withUpgrade(500, {productionTimeMs: 10000})
+        .withUpgrade(1000, {productionTimeMs: 7500})
+        .withUpgrade(1500, {productionTimeMs: 5000})
         .build(),
+    new GameObjectDataBuilder(SAIL_FACTORY_ID, "sailFactory", "Sail Factory", 3500)
+        .withSpritesDirName("conveyorBelt")
+        .withSpriteAnimationFrames([0])
+        .withUpgrade(0, {productionTimeMs: 15000})
+        .withUpgrade(700, {productionTimeMs: 10000})
+        .withUpgrade(1400, {productionTimeMs: 7500})
+        .withUpgrade(2000, {productionTimeMs: 5000})
+        .build(),
+    new GameObjectDataBuilder(CHAIR_FACTORY_ID, "chairFactory", "Chair Factory", 4500)
+        .withSpritesDirName("conveyorBelt")
+        .withSpriteAnimationFrames([0])
+        .withUpgrade(0, {productionTimeMs: 15000})
+        .withUpgrade(1200, {productionTimeMs: 10000})
+        .withUpgrade(1800, {productionTimeMs: 7500})
+        .withUpgrade(2500, {productionTimeMs: 5000})
+        .build(),
+
 ];
 
 export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

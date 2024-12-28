@@ -201,6 +201,15 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(800, {productionTimeMs: 7500})
         .withUpgrade(1200, {productionTimeMs: 5000})
         .build(),
+
+    new GameObjectDataBuilder(FABRIC_FACTORY_ID, "fabricFactory", "Fabric Factory", 2500)
+        .withSpritesDirName("conveyorBelt")
+        .withSpriteAnimationFrames([0])
+        .withUpgrade(0, {productionTimeMs: 15000})
+        .withUpgrade(400, {productionTimeMs: 10000})
+        .withUpgrade(800, {productionTimeMs: 7500})
+        .withUpgrade(1200, {productionTimeMs: 5000})
+        .build(),
 ];
 
 export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

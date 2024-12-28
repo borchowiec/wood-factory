@@ -11,9 +11,11 @@ import {
     CONVEYOR_BELT_ID,
     CONVEYOR_BELT_LEFT_ID,
     CONVEYOR_BELT_RIGHT_ID,
+    FABRIC_FACTORY_ID,
     getGameObjectById,
     LOG_PRODUCER_ID,
-    MERGER_ID, PAPER_WORKSHOP_ID,
+    MERGER_ID,
+    PAPER_WORKSHOP_ID,
     SAW_MILL_ID,
     SORTER_ID,
     SPLITTER_ID,
@@ -23,6 +25,7 @@ import {
 } from "../common/GameObjectData.ts";
 import {
     BeamItem,
+    ClothItem,
     GameItem,
     GameItemData,
     getGameItemDataById,
@@ -30,18 +33,11 @@ import {
     LOG_ID,
     LogItem,
     NailItem,
-    PlankItem, SheetOfPaperItem
+    PlankItem,
+    SheetOfPaperItem
 } from "./gameItems";
 import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import {isVisible} from "@testing-library/user-event/utils/misc/isVisible";
+import {Simulate} from "react-dom/test-utils";
 
 const NORTH = 0;
 const EAST = 1;
@@ -150,6 +146,8 @@ export function createObject(id, scene) {
             return new Sorter(-5, -5, scene);
         case PAPER_WORKSHOP_ID:
             return new PaperWorkshop(-5, -5, scene);
+        case FABRIC_FACTORY_ID:
+            return new FabricFactory(-5, -5, scene);
     }
 }
 
@@ -185,7 +183,9 @@ export abstract class GameObject {
     abstract getCurrentLevel(): number;
 
     abstract setLevel(level: number);
+
     abstract hasModifyButton(): boolean;
+
     abstract modify(): void;
 }
 
@@ -963,18 +963,114 @@ class LogProducer extends BasicObject {
     }
 }
 
+
+interface InOutInputData {
+    gridXOffset: number;
+    gridYOffset: number;
+    side: number;
+    isInputItemAcceptable: (item: GameItem) => boolean;
+    goal: number;
+}
+
+class InOutInput {
+    private readonly detectorSize = TILE_SIZE / 10;
+    private readonly progressBarSize = TILE_SIZE / 2;
+
+    private parent: InOutObject;
+    private gridXOffset: number;
+    private gridYOffset: number;
+    private side: number;
+    readonly progressBar: ProgressBar;
+    readonly inDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(0, 0, 0, 0);
+    readonly isInputItemAcceptable: (item: GameItem) => boolean;
+    readonly scene: Phaser.Scene;
+
+    private readonly goal: number;
+    private numberOfItems = 0;
+
+
+    constructor(parent, inputData: InOutInputData, scene) {
+        this.parent = parent;
+        this.gridXOffset = inputData.gridXOffset;
+        this.gridYOffset = inputData.gridYOffset;
+        this.side = inputData.side;
+        this.isInputItemAcceptable = inputData.isInputItemAcceptable;
+        this.scene = scene;
+        this.progressBar = new ProgressBar(scene, -10000, -1000, this.progressBarSize);
+        this.goal = inputData.goal;
+    }
+
+    move() {
+        this.inDetectionZone.x = this.parent.gridX * TILE_SIZE + this.gridXOffset * TILE_SIZE + this.getSideXOffset();
+        this.inDetectionZone.y = this.parent.gridY * TILE_SIZE + this.gridYOffset * TILE_SIZE + this.getSideYOffset();
+        this.inDetectionZone.width = this.side === SOUTH || this.side === NORTH ? TILE_SIZE : this.detectorSize;
+        this.inDetectionZone.height = this.side === EAST || this.side === WEST ? TILE_SIZE : this.detectorSize;
+
+        this.progressBar.move(
+            this.parent.gridX * TILE_SIZE + this.gridXOffset * TILE_SIZE + (TILE_SIZE - this.progressBarSize) / 2,
+            this.parent.gridY * TILE_SIZE + this.gridYOffset * TILE_SIZE + TILE_SIZE / 10
+        );
+    }
+
+    rotate() {
+        const tempGridXOffset = this.gridXOffset;
+        this.gridXOffset = -this.gridYOffset;
+        this.gridYOffset = tempGridXOffset;
+        this.side = (this.side + 1) % 4;
+        this.move();
+    }
+
+    private getSideXOffset() {
+        return this.side == EAST ? TILE_SIZE - this.detectorSize : 0;
+    }
+
+    private getSideYOffset() {
+        return this.side == SOUTH ? TILE_SIZE - this.detectorSize : 0;
+    }
+
+    hasItems() {
+        return this.numberOfItems >= this.goal;
+    }
+
+    update(items: GameItem[]): boolean {
+        if (this.hasItems()) {
+            return false;
+        }
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+
+            if (!this.isInputItemAcceptable(item)) {
+                continue;
+            }
+
+            let detectionZones = item.getDetectionZones();
+            item.areDetectionZonesOverlappingWithRect(this.inDetectionZone);
+            for (let j = 0; j < detectionZones.length; j++) {
+                if (Phaser.Geom.Rectangle.Overlaps(detectionZones[j], this.inDetectionZone)) {
+                    this.numberOfItems++;
+                    this.scene.removeItem(item);
+                    this.progressBar.updateProgress(this.numberOfItems / this.goal * 100);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    reset() {
+        this.numberOfItems = 0;
+        this.progressBar.updateProgress(0);
+    }
+}
+
 abstract class InOutObject extends BasicObject {
     private productionTimeMs: number;
     private progressBar: ProgressBar;
-    private hasItem: boolean = false;
     private productionStartTimestampInMs: number = 0;
+    private isProducing = false;
 
-    private inDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
-        0,
-        0,
-        0,
-        0
-    );
+    private inputs: InOutInput[];
     private outDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(
         0,
         0,
@@ -982,7 +1078,7 @@ abstract class InOutObject extends BasicObject {
         0
     );
 
-    constructor(gridX, gridY, scene) {
+    constructor(gridX, gridY, scene, inputsData: InOutInputData[]) {
         super(
             gridX,
             gridY,
@@ -992,54 +1088,56 @@ abstract class InOutObject extends BasicObject {
                 {gridX: 0, gridY: 0}
             ]
         );
+        this.inputs = inputsData.map(inputData => new InOutInput(this, inputData, scene));
         this.productionTimeMs = getGameObjectById(this.getId()).upgrades[0].details.productionTimeMs;
         this.progressBar = new ProgressBar(this.scene, gridX * TILE_SIZE, gridY * TILE_SIZE, TILE_SIZE);
     }
 
     getDetectionZones(): Phaser.Geom.Rectangle[] {
-        return [this.outDetectionZone, this.inDetectionZone];
+        return [this.outDetectionZone, ...this.inputs.map(input => input.inDetectionZone)];
     }
 
     updateDetectionZones() {
         const detectorSize = TILE_SIZE / 10;
 
         if (this.direction === EAST || this.direction === WEST) {
-            this.inDetectionZone.width = detectorSize;
-            this.inDetectionZone.height = TILE_SIZE;
-            this.inDetectionZone.y = this.gridY * TILE_SIZE;
-
             this.outDetectionZone.width = detectorSize;
             this.outDetectionZone.height = TILE_SIZE;
             this.outDetectionZone.y = this.gridY * TILE_SIZE;
         } else {
-            this.inDetectionZone.width = TILE_SIZE;
-            this.inDetectionZone.height = detectorSize;
-            this.inDetectionZone.x = this.gridX * TILE_SIZE;
-
             this.outDetectionZone.width = TILE_SIZE;
             this.outDetectionZone.height = detectorSize;
             this.outDetectionZone.x = this.gridX * TILE_SIZE;
         }
 
         if (this.direction === NORTH) {
-            this.inDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
             this.outDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
         } else if (this.direction === EAST) {
-            this.inDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
             this.outDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
         } else if (this.direction === SOUTH) {
-            this.inDetectionZone.y = this.gridY * TILE_SIZE - detectorSize;
             this.outDetectionZone.y = this.gridY * TILE_SIZE + TILE_SIZE;
         } else if (this.direction === WEST) {
-            this.inDetectionZone.x = this.gridX * TILE_SIZE + TILE_SIZE;
             this.outDetectionZone.x = this.gridX * TILE_SIZE - detectorSize;
         }
 
         this.progressBar.move(this.gridX * TILE_SIZE, this.gridY * TILE_SIZE);
+        this.inputs.forEach(input => input.move());
+    }
+
+    rotate() {
+        this.inputs.forEach(input => input.rotate());
+        super.rotate();
     }
 
     update(items: GameItem[]): void {
-        if (this.hasItem) {
+        const doAllInputsHaveItems = this.inputs.every(input => input.hasItems());
+
+        if (doAllInputsHaveItems && !this.isProducing) {
+            this.isProducing = true;
+            this.productionStartTimestampInMs = new Date().getTime();
+        }
+
+        if (this.isProducing) {
             const currentTime = new Date().getTime();
             if (currentTime - this.productionStartTimestampInMs < this.productionTimeMs) {
                 const progress = (currentTime - this.productionStartTimestampInMs) / this.productionTimeMs * 100;
@@ -1071,24 +1169,14 @@ abstract class InOutObject extends BasicObject {
                 newItem.paint();
             });
             this.progressBar.updateProgress(0);
-            this.hasItem = false;
+            this.isProducing = false;
+            this.inputs.forEach(input => input.reset());
             return;
         }
 
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-
-            if (!this.isInputItemAcceptable(item)) {
-                continue;
-            }
-
-            let detectionZones = item.getDetectionZones();
-            for (let j = 0; j < detectionZones.length; j++) {
-                if (Phaser.Geom.Rectangle.Overlaps(detectionZones[j], this.inDetectionZone)) {
-                    this.hasItem = true;
-                    this.productionStartTimestampInMs = new Date().getTime();
-                    this.scene.removeItem(item);
-                }
+        for (const input of this.inputs) {
+            if (input.update(items)) {
+                return;
             }
         }
     }
@@ -1100,22 +1188,32 @@ abstract class InOutObject extends BasicObject {
     clear() {
         super.clear();
         this.progressBar.clear();
+        this.inputs.forEach(input => input.progressBar.clear());
     }
 
 
     setVisible(isVisible: boolean) {
         super.setVisible(isVisible);
         this.progressBar.setVisible(isVisible);
+        this.inputs.forEach(input => input.progressBar.setVisible(isVisible));
     }
 
     abstract produceItems(x: number, y: number, scene: Phaser.Scene): GameItem[];
-
-    abstract isInputItemAcceptable(item: GameItem): boolean;
 }
 
 class SawMill extends InOutObject {
     constructor(gridX, gridY, scene) {
-        super(gridX, gridY, scene);
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable:(item) => item instanceof LogItem,
+                    goal: 1
+                },
+            ]
+        );
     }
 
     getId(): number {
@@ -1125,15 +1223,21 @@ class SawMill extends InOutObject {
     produceItems(x: number, y: number, scene: Phaser.Scene) {
         return [new PlankItem(x, y, scene)];
     }
-
-    isInputItemAcceptable(item: GameItem): boolean {
-        return item instanceof LogItem;
-    }
 }
 
 class Workshop extends InOutObject {
     constructor(gridX, gridY, scene) {
-        super(gridX, gridY, scene);
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable:(item) => item instanceof LogItem,
+                    goal: 1
+                },
+            ]
+        );
     }
 
     getId(): number {
@@ -1143,15 +1247,21 @@ class Workshop extends InOutObject {
     produceItems(x: number, y: number, scene: Phaser.Scene) {
         return [new BeamItem(x, y, scene)];
     }
-
-    isInputItemAcceptable(item: GameItem): boolean {
-        return item instanceof LogItem;
-    }
 }
 
 class WoodenNailsWorkshop extends InOutObject {
     constructor(gridX, gridY, scene) {
-        super(gridX, gridY, scene);
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable:(item) => item instanceof PlankItem,
+                    goal: 1
+                },
+            ]
+        );
     }
 
     getId(): number {
@@ -1160,10 +1270,6 @@ class WoodenNailsWorkshop extends InOutObject {
 
     produceItems(x: number, y: number, scene: Phaser.Scene) {
         return [new NailItem(x, y, scene), new NailItem(x + 3, y + 3, scene)];
-    }
-
-    isInputItemAcceptable(item: GameItem): boolean {
-        return item instanceof PlankItem;
     }
 }
 
@@ -1599,7 +1705,7 @@ class Sorter extends BasicObject {
         this.itemImage.setOrigin(0, 0);
         this.itemImage.setDepth(OBJECT_DEPTH + 1);
         this.itemImage.x = this.gridX * TILE_SIZE;
-        this.itemImage.y = (this.gridY-1) * TILE_SIZE;
+        this.itemImage.y = (this.gridY - 1) * TILE_SIZE;
     }
 
     getDetectionZones(): Phaser.Geom.Rectangle[] {
@@ -1741,15 +1847,15 @@ class Sorter extends BasicObject {
     updateItemImagePosition() {
         if (this.direction === EAST) {
             this.itemImage.x = this.gridX * TILE_SIZE;
-            this.itemImage.y = (this.gridY-1) * TILE_SIZE;
+            this.itemImage.y = (this.gridY - 1) * TILE_SIZE;
         } else if (this.direction === SOUTH) {
-            this.itemImage.x = (this.gridX+1) * TILE_SIZE;
+            this.itemImage.x = (this.gridX + 1) * TILE_SIZE;
             this.itemImage.y = this.gridY * TILE_SIZE;
         } else if (this.direction === WEST) {
             this.itemImage.x = this.gridX * TILE_SIZE;
-            this.itemImage.y = (this.gridY+1) * TILE_SIZE;
+            this.itemImage.y = (this.gridY + 1) * TILE_SIZE;
         } else if (this.direction === NORTH) {
-            this.itemImage.x = (this.gridX-1) * TILE_SIZE;
+            this.itemImage.x = (this.gridX - 1) * TILE_SIZE;
             this.itemImage.y = this.gridY * TILE_SIZE;
         }
     }
@@ -1782,7 +1888,17 @@ class Sorter extends BasicObject {
 
 class PaperWorkshop extends InOutObject {
     constructor(gridX, gridY, scene) {
-        super(gridX, gridY, scene);
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable:(item) => item instanceof PlankItem,
+                    goal: 1
+                },
+            ]
+        );
     }
 
     getId(): number {
@@ -1796,9 +1912,29 @@ class PaperWorkshop extends InOutObject {
             new SheetOfPaperItem(x + 3, y + 3, scene),
         ];
     }
+}
 
-    isInputItemAcceptable(item: GameItem): boolean {
-        return item instanceof PlankItem;
+class FabricFactory extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable:(item) => item instanceof SheetOfPaperItem,
+                    goal: 4
+                },
+            ]
+        );
+    }
+
+    getId(): number {
+        return FABRIC_FACTORY_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new ClothItem(x, y, scene)];
     }
 }
 

@@ -10,6 +10,7 @@ import {
 import {paintTerrain} from "./terrainPainter.js";
 import {gameObjects, getGameObjectById} from "../common/GameObjectData";
 import {createObject} from "./gameObjects.ts";
+import {gameItemsData} from "./gameItems.ts";
 
 function getSuccessResponse() {
     return {success: true};
@@ -53,8 +54,8 @@ export class MainScene extends Scene {
             frameHeight: 64
         });
 
-        ["log", "beam", "nail", "plank"]
-            .forEach(item => this.load.image(item, `assets/items/${item}.png`));
+        gameItemsData
+            .forEach(item => this.load.image(item.imageName, `assets/items/${item.imageName}.png`));
     }
 
     create() {

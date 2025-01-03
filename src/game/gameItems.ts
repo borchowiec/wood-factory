@@ -24,15 +24,15 @@ const CLOTH_ID = 6;
 const SAIL_ID = 7;
 const CHAIR_ID = 8;
 
-const gameItemsData = [
+export const gameItemsData = [
     new GameItemData(LOG_ID, "log", 10),
     new GameItemData(PLANK_ID, "plank", 25),
     new GameItemData(BEAM_ID, "beam", 25),
     new GameItemData(NAIL_ID, "nail", 7),
-    new GameItemData(SHEET_OF_PAPER_ID, "log"/*"sheetOfPaper"*/, 10),
-    new GameItemData(CLOTH_ID, "log"/*"cloth"*/, 50),
-    new GameItemData(SAIL_ID, "log"/*"sail"*/, 100),
-    new GameItemData(CHAIR_ID, "log"/*"chair"*/, 75),
+    new GameItemData(SHEET_OF_PAPER_ID, "paper", 10),
+    new GameItemData(CLOTH_ID, "fabric", 50),
+    new GameItemData(SAIL_ID, "sail", 100),
+    new GameItemData(CHAIR_ID, "chair", 75),
 ]
 
 export function getGameItemDataById(id: number): GameItemData {

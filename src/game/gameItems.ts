@@ -23,6 +23,12 @@ const SHEET_OF_PAPER_ID = 5;
 const CLOTH_ID = 6;
 const SAIL_ID = 7;
 const CHAIR_ID = 8;
+const TABLE_ID = 9;
+const SCULPTURE_ID = 10;
+const BOAT_ID = 11;
+const SIMPLE_SAILBOAT_ID = 12;
+const BIG_SAILBOAT_ID = 13;
+const SHIP_ID = 14;
 
 export const gameItemsData = [
     new GameItemData(LOG_ID, "log", 10),
@@ -33,6 +39,12 @@ export const gameItemsData = [
     new GameItemData(CLOTH_ID, "fabric", 50),
     new GameItemData(SAIL_ID, "sail", 100),
     new GameItemData(CHAIR_ID, "chair", 75),
+    new GameItemData(TABLE_ID, "log", 150),
+    new GameItemData(SCULPTURE_ID, "log", 200),
+    new GameItemData(BOAT_ID, "log", 400),
+    new GameItemData(SIMPLE_SAILBOAT_ID, "log", 700),
+    new GameItemData(BIG_SAILBOAT_ID, "log", 1200),
+    new GameItemData(SHIP_ID, "log", 2500),
 ]
 
 export function getGameItemDataById(id: number): GameItemData {
@@ -252,5 +264,41 @@ export class SailItem extends BasicItem {
 export class ChairItem extends BasicItem {
     constructor(x, y, scene: Phaser.Scene) {
         super(x, y, CHAIR_ID, scene);
+    }
+}
+
+export class TableItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, TABLE_ID, scene);
+    }
+}
+
+export class SculptureItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, SCULPTURE_ID, scene);
+    }
+}
+
+export class BoatItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, BOAT_ID, scene);
+    }
+}
+
+export class SimpleSailboatItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, SIMPLE_SAILBOAT_ID, scene);
+    }
+}
+
+export class BigSailboatItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, BIG_SAILBOAT_ID, scene);
+    }
+}
+
+export class ShipItem extends BasicItem {
+    constructor(x, y, scene: Phaser.Scene) {
+        super(x, y, SHIP_ID, scene);
     }
 }

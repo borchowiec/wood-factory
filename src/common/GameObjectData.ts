@@ -114,7 +114,12 @@ export const PAPER_WORKSHOP_ID = 11;
 export const FABRIC_FACTORY_ID = 12;
 export const SAIL_FACTORY_ID = 13;
 export const CHAIR_FACTORY_ID = 14;
-
+export const TABLE_FACTORY_ID = 15;
+export const SCULPTING_WORKSHOP_ID = 16;
+export const BOAT_FACTORY_ID = 17;
+export const SAILBOAT_FACTORY_ID = 18;
+export const SAILBOAT_WORKSHOP_ID = 19;
+export const SHIP_WORKSHOP_ID = 20;
 
 const conveyorBeltUpgrades = [
     {price: 0, details: {speed: 0.25}},
@@ -228,6 +233,45 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(2500, {productionTimeMs: 5000})
         .build(),
 
+    new GameObjectDataBuilder(TABLE_FACTORY_ID, "tableFactory", "Table Factory", 6000)
+        .withSpritesDirName("conveyorBelt")
+                .withUpgrade(0, {productionTimeMs: 15000})
+        .withUpgrade(1500, {productionTimeMs: 10000})
+        .withUpgrade(2000, {productionTimeMs: 7500})
+        .withUpgrade(2700, {productionTimeMs: 5000})
+        .build(),
+    new GameObjectDataBuilder(SCULPTING_WORKSHOP_ID, "sculptingWorkshop", "Sculpting Workshop", 8000)
+        .withSpritesDirName("conveyorBelt")
+                .withUpgrade(0, {productionTimeMs: 15000})
+        .withUpgrade(1600, {productionTimeMs: 10000})
+        .withUpgrade(2100, {productionTimeMs: 7500})
+        .withUpgrade(2800, {productionTimeMs: 5000})
+        .build(),
+    new GameObjectDataBuilder(BOAT_FACTORY_ID, "boatFactory", "Boat Factory", 10500)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {productionTimeMs: 30000})
+        .withUpgrade(5000, {productionTimeMs: 15000})
+        .withUpgrade(8000, {productionTimeMs: 7000})
+        .build(),
+    new GameObjectDataBuilder(SAILBOAT_FACTORY_ID, "sailboatFactory", "Sailboat Factory", 14000)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {productionTimeMs: 30000})
+        .withUpgrade(7000, {productionTimeMs: 15000})
+        .withUpgrade(12000, {productionTimeMs: 7000})
+        .build(),
+    new GameObjectDataBuilder(SAILBOAT_WORKSHOP_ID, "sailboatWorkshop", "Sailboat Workshop", 18000)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {productionTimeMs: 60000})
+        .withUpgrade(8000, {productionTimeMs: 30000})
+        .withUpgrade(15000, {productionTimeMs: 15000})
+        .build(),
+    new GameObjectDataBuilder(SHIP_WORKSHOP_ID, "shipWorkshops", "Ship Workshop", 50000)
+        .withSpritesDirName("conveyorBelt")
+        .withUpgrade(0, {productionTimeMs: 60000})
+        .withUpgrade(25000, {productionTimeMs: 30000})
+        .withUpgrade(40000, {productionTimeMs: 15000})
+        .build(),
 ];
+
 
 export const getGameObjectById = (id: number) => gameObjects.find((obj) => obj.id === id)

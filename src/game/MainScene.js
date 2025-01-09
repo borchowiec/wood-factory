@@ -33,7 +33,7 @@ export class MainScene extends Scene {
         this.longPressTimer = null;
         this.items = null;
 
-        this.setMoney(100000);
+        this.setMoney(1000000);
     }
 
     preload() {

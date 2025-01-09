@@ -8,6 +8,7 @@ import {
     TILE_SIZE
 } from "./properties.js";
 import {
+    BOAT_FACTORY_ID,
     CHAIR_FACTORY_ID,
     CONVEYOR_BELT_ID,
     CONVEYOR_BELT_LEFT_ID,
@@ -16,16 +17,16 @@ import {
     getGameObjectById,
     LOG_PRODUCER_ID,
     MERGER_ID,
-    PAPER_WORKSHOP_ID, SAIL_FACTORY_ID,
-    SAW_MILL_ID,
+    PAPER_WORKSHOP_ID, SAIL_FACTORY_ID, SAILBOAT_FACTORY_ID, SAILBOAT_WORKSHOP_ID,
+    SAW_MILL_ID, SCULPTING_WORKSHOP_ID, SHIP_WORKSHOP_ID,
     SORTER_ID,
     SPLITTER_ID,
-    STORAGE_ID,
+    STORAGE_ID, TABLE_FACTORY_ID,
     WOODEN_NAILS_WORKSHOP_ID,
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
 import {
-    BeamItem, ChairItem,
+    BeamItem, BigSailboatItem, BoatItem, ChairItem,
     ClothItem,
     GameItem,
     GameItemData,
@@ -34,8 +35,8 @@ import {
     LOG_ID,
     LogItem,
     NailItem,
-    PlankItem, SailItem,
-    SheetOfPaperItem
+    PlankItem, SailItem, SculptureItem,
+    SheetOfPaperItem, ShipItem, SimpleSailboatItem, TableItem
 } from "./gameItems";
 import * as Phaser from "phaser";
 
@@ -152,6 +153,18 @@ export function createObject(id, scene) {
             return new SailFactory(-5, -5, scene);
         case CHAIR_FACTORY_ID:
             return new ChairFactory(-5, -5, scene);
+        case TABLE_FACTORY_ID:
+            return new TableFactory(-5, -5, scene);
+        case SCULPTING_WORKSHOP_ID:
+            return new SculptingWorkshop(-5, -5, scene);
+        case BOAT_FACTORY_ID:
+            return new BoatFactory(-5, -5, scene);
+        case SAILBOAT_FACTORY_ID:
+            return new SailboatFactory(-5, -5, scene);
+        case SAILBOAT_WORKSHOP_ID:
+            return new SailboatWorkshop(-5, -5, scene);
+        case SHIP_WORKSHOP_ID:
+            return new ShipWorkshop(-5, -5, scene);
     }
 }
 
@@ -2028,6 +2041,299 @@ class ChairFactory extends InOutObject {
 
     produceItems(x: number, y: number, scene: Phaser.Scene) {
         return [new ChairItem(x, y, scene)];
+    }
+}
+
+class TableFactory extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    goal: 6
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    goal: 10
+                },
+            ],
+            [
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0}
+            ]
+        );
+    }
+
+    getId(): number {
+        return TABLE_FACTORY_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new TableItem(x, y, scene)];
+    }
+}
+
+class SculptingWorkshop extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    goal: 10
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof LogItem,
+                    goal: 1
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    goal: 4
+                },
+            ],
+            [
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: -1, gridY: 1},
+                {gridX: 0, gridY: 0},
+            ]
+        );
+    }
+
+    getId(): number {
+        return SCULPTING_WORKSHOP_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new SculptureItem(x, y, scene)];
+    }
+}
+
+class BoatFactory extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    goal: 20
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    goal: 50
+                },
+            ],
+            [
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0}
+            ]
+        );
+    }
+
+    getId(): number {
+        return BOAT_FACTORY_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new BoatItem(x, y, scene)];
+    }
+}
+
+class SailboatFactory extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -2,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof BoatItem,
+                    goal: 1
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    goal: 10
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    goal: 50
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof SailItem,
+                    goal: 1
+                },
+
+            ],
+            [
+                {gridX: -1, gridY: -2},
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: -1, gridY: 1},
+                {gridX: 0, gridY: -2},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0},
+                {gridX: 0, gridY: 1},
+            ]
+        );
+    }
+
+    getId(): number {
+        return SAILBOAT_FACTORY_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new SimpleSailboatItem(x, y, scene)];
+    }
+}
+
+class SailboatWorkshop extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -2,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof SimpleSailboatItem,
+                    goal: 1
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof ChairItem,
+                    goal: 8
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof TableItem,
+                    goal: 4
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    goal: 5
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 2,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    goal: 10
+                },
+            ],
+            [
+                {gridX: -1, gridY: -2},
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: -1, gridY: 1},
+                {gridX: -1, gridY: 2},
+                {gridX: 0, gridY: -2},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0},
+                {gridX: 0, gridY: 1},
+                {gridX: 0, gridY: 2},
+            ]
+        );
+    }
+
+    getId(): number {
+        return SAILBOAT_WORKSHOP_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new BigSailboatItem(x, y, scene)];
+    }
+}
+
+class ShipWorkshop extends InOutObject {
+    constructor(gridX, gridY, scene) {
+        super(gridX, gridY, scene,
+            [
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -2,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof BigSailboatItem,
+                    goal: 1
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: -1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    goal: 10
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 0,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    goal: 20
+                },
+                {
+                    gridXOffset: -1,
+                    gridYOffset: 1,
+                    side: EAST,
+                    isInputItemAcceptable: (item) => item instanceof SculptureItem,
+                    goal: 2
+                }
+            ],
+            [
+                {gridX: -1, gridY: -2},
+                {gridX: -1, gridY: -1},
+                {gridX: -1, gridY: 0},
+                {gridX: -1, gridY: 1},
+                {gridX: 0, gridY: -2},
+                {gridX: 0, gridY: -1},
+                {gridX: 0, gridY: 0},
+                {gridX: 0, gridY: 1},
+            ]
+        );
+    }
+
+    getId(): number {
+        return SHIP_WORKSHOP_ID;
+    }
+
+    produceItems(x: number, y: number, scene: Phaser.Scene) {
+        return [new ShipItem(x, y, scene)];
     }
 }
 

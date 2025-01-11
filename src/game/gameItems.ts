@@ -39,12 +39,12 @@ export const gameItemsData = [
     new GameItemData(CLOTH_ID, "fabric", 50),
     new GameItemData(SAIL_ID, "sail", 100),
     new GameItemData(CHAIR_ID, "chair", 75),
-    new GameItemData(TABLE_ID, "log", 150),
-    new GameItemData(SCULPTURE_ID, "log", 200),
-    new GameItemData(BOAT_ID, "log", 400),
-    new GameItemData(SIMPLE_SAILBOAT_ID, "log", 700),
-    new GameItemData(BIG_SAILBOAT_ID, "log", 1200),
-    new GameItemData(SHIP_ID, "log", 2500),
+    new GameItemData(TABLE_ID, "table", 150),
+    new GameItemData(SCULPTURE_ID, "sculpture", 200),
+    new GameItemData(BOAT_ID, "boat", 400),
+    new GameItemData(SIMPLE_SAILBOAT_ID, "simple-sailboat", 700),
+    new GameItemData(BIG_SAILBOAT_ID, "big-sailboat", 1200),
+    new GameItemData(SHIP_ID, "ship", 2500),
 ]
 
 export function getGameItemDataById(id: number): GameItemData {

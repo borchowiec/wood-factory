@@ -2111,7 +2111,9 @@ class SculptingWorkshop extends InOutObject {
                 {gridX: -1, gridY: -1},
                 {gridX: -1, gridY: 0},
                 {gridX: -1, gridY: 1},
+                {gridX: 0, gridY: -1},
                 {gridX: 0, gridY: 0},
+                {gridX: 0, gridY: 1},
             ]
         );
     }

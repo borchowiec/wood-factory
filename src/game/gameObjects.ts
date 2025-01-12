@@ -1100,11 +1100,11 @@ class InOutInput {
 
             this.scene.removeItem(item);
             if (item.getId() != this.acceptedItemId) {
+                createExplosion(this.scene, item.getX() + 32, item.getY() + 32);
                 return true;
             }
 
             this.setNumberOfItems(this.numberOfItems + 1);
-
             return true;
         }
         return false;
@@ -2420,4 +2420,13 @@ function getFirstItemThatOverlapsWithRectangle(rect: Phaser.Geom.Rectangle, item
     }
 
     return null;
+}
+
+function createExplosion(scene, x, y) {
+    const explosion = scene.add.sprite(x, y, 'explosion');
+    explosion.setDepth(OBJECT_DEPTH + 20);
+    explosion.play('explosionAnim');
+    explosion.on('animationcomplete', () => {
+        explosion.destroy();
+    });
 }

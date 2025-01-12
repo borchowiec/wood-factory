@@ -2,7 +2,7 @@ import {Scene} from "phaser";
 import {
     GRID_HEIGHT,
     GRID_WIDTH,
-    LONG_PRESS_DURATION_MS,
+    LONG_PRESS_DURATION_MS, OBJECT_DEPTH,
     SELL_PRICE,
     SPRITE_FRAME_SIZE,
     TILE_SIZE
@@ -49,9 +49,9 @@ export class MainScene extends Scene {
             });
         });
 
-        this.load.spritesheet('conveyorBelt', 'assets/objects/conveyor-belt/sprite.png', {
-            frameWidth: 64,
-            frameHeight: 64
+        this.load.spritesheet('explosion', 'assets/explosion.png', {
+            frameWidth: 32,
+            frameHeight: 32
         });
 
         gameItemsData
@@ -80,7 +80,16 @@ export class MainScene extends Scene {
                 frameRate: gameObject.imageData.spriteAnimationRate,
                 repeat: -1
             });
-        })
+        });
+
+        this.anims.create({
+            key: "explosionAnim",
+            frames: this.anims.generateFrameNumbers(
+                "explosion",
+                {frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}),
+            frameRate: 40,
+            repeat: 0
+        });
     }
 
     initializeCamera(tileSize, gridWidth, gridHeight) {

@@ -39,6 +39,14 @@ import {
     SheetOfPaperItem, ShipItem, SimpleSailboatItem, TableItem
 } from "./gameItems";
 import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import {i, j} from "vite/dist/node/types.d-aGj9QkWt";
+import * as Phaser from "phaser";
+import {Simulate} from "react-dom/test-utils";
+import progress = Simulate.progress;
+import * as Phaser from "phaser";
+import {isVisible} from "@testing-library/user-event/utils/misc/isVisible";
 
 const NORTH = 0;
 const EAST = 1;
@@ -1066,11 +1074,20 @@ class InOutInput {
                 return true;
             }
 
-            this.numberOfItems++;
-            this.progressBar.updateProgress(this.numberOfItems / this.goal * 100);
+            this.setNumberOfItems(this.numberOfItems + 1);
+
             return true;
         }
         return false;
+    }
+
+    setNumberOfItems(numberOfItems: number) {
+        this.numberOfItems = numberOfItems;
+        this.progressBar.updateProgress(this.numberOfItems / this.goal * 100);
+    }
+
+    getNumberOfItems() {
+        return this.numberOfItems;
     }
 
     reset() {
@@ -1103,6 +1120,20 @@ abstract class InOutObject extends BasicObject {
         this.inputs = inputsData.map(inputData => new InOutInput(this, inputData, scene));
         this.productionTimeMs = getGameObjectById(this.getId()).upgrades[0].details.productionTimeMs;
         this.progressBar = new ProgressBar(this.scene, gridX * TILE_SIZE, gridY * TILE_SIZE, TILE_SIZE);
+    }
+
+
+    copy(): GameObject {
+        const newObject = super.copy() as InOutObject;
+
+        newObject.productionTimeMs = this.productionTimeMs;
+        newObject.productionStartTimestampInMs = this.productionStartTimestampInMs;
+        newObject.isProducing = this.isProducing;
+        for (let i = 0; i < newObject.inputs.length; i++) {
+            newObject.inputs[i].setNumberOfItems(this.inputs[i].getNumberOfItems());
+        }
+
+        return newObject;
     }
 
     getDetectionZones(): Phaser.Geom.Rectangle[] {

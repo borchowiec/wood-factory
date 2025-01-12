@@ -47,6 +47,11 @@ import {Simulate} from "react-dom/test-utils";
 import progress = Simulate.progress;
 import * as Phaser from "phaser";
 import {isVisible} from "@testing-library/user-event/utils/misc/isVisible";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
 
 const NORTH = 0;
 const EAST = 1;
@@ -1646,6 +1651,16 @@ class Storage extends BasicObject {
         );
         this.capacity = getGameObjectById(this.getId()).upgrades[0].details.capacity;
         this.progressBar = new ProgressBar(this.scene, gridX * TILE_SIZE, gridY * TILE_SIZE, TILE_SIZE);
+    }
+
+
+    copy(): GameObject {
+        const newObject = super.copy() as Storage;
+
+        newObject.capacity = this.capacity;
+        newObject.storedItems = this.storedItems;
+
+        return newObject;
     }
 
     getId(): number {

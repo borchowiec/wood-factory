@@ -16,19 +16,19 @@ export class GameItemData {
 }
 
 export const LOG_ID = 1;
-const PLANK_ID = 2;
-const BEAM_ID = 3;
-const NAIL_ID = 4;
-const SHEET_OF_PAPER_ID = 5;
-const CLOTH_ID = 6;
-const SAIL_ID = 7;
-const CHAIR_ID = 8;
-const TABLE_ID = 9;
-const SCULPTURE_ID = 10;
-const BOAT_ID = 11;
-const SIMPLE_SAILBOAT_ID = 12;
-const BIG_SAILBOAT_ID = 13;
-const SHIP_ID = 14;
+export const PLANK_ID = 2;
+export const BEAM_ID = 3;
+export const NAIL_ID = 4;
+export const SHEET_OF_PAPER_ID = 5;
+export const CLOTH_ID = 6;
+export const SAIL_ID = 7;
+export const CHAIR_ID = 8;
+export const TABLE_ID = 9;
+export const SCULPTURE_ID = 10;
+export const BOAT_ID = 11;
+export const SIMPLE_SAILBOAT_ID = 12;
+export const BIG_SAILBOAT_ID = 13;
+export const SHIP_ID = 14;
 
 export const gameItemsData = [
     new GameItemData(LOG_ID, "log", 10),

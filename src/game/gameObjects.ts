@@ -26,17 +26,18 @@ import {
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
 import {
-    BeamItem, BigSailboatItem, BoatItem, ChairItem,
+    BEAM_ID,
+    BeamItem, BIG_SAILBOAT_ID, BigSailboatItem, BOAT_ID, BoatItem, CHAIR_ID, ChairItem, CLOTH_ID,
     ClothItem,
     GameItem,
     GameItemData,
     getGameItemDataById,
     getNextGameItemData,
     LOG_ID,
-    LogItem,
-    NailItem,
-    PlankItem, SailItem, SculptureItem,
-    SheetOfPaperItem, ShipItem, SimpleSailboatItem, TableItem
+    LogItem, NAIL_ID,
+    NailItem, PLANK_ID,
+    PlankItem, SAIL_ID, SailItem, SCULPTURE_ID, SculptureItem, SHEET_OF_PAPER_ID,
+    SheetOfPaperItem, ShipItem, SIMPLE_SAILBOAT_ID, SimpleSailboatItem, TABLE_ID, TableItem
 } from "./gameItems";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
@@ -998,7 +999,7 @@ interface InOutInputData {
     gridXOffset: number;
     gridYOffset: number;
     side: number;
-    isInputItemAcceptable: (item: GameItem) => boolean;
+    acceptedItemId: number;
     goal: number;
 }
 
@@ -1010,9 +1011,11 @@ class InOutInput {
     private gridXOffset: number;
     private gridYOffset: number;
     private side: number;
+
+    readonly itemImage: Phaser.GameObjects.Image;
     readonly progressBar: ProgressBar;
     readonly inDetectionZone: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(0, 0, 0, 0);
-    readonly isInputItemAcceptable: (item: GameItem) => boolean;
+    readonly acceptedItemId: number;
     readonly scene: Phaser.Scene;
 
     private readonly goal: number;
@@ -1024,10 +1027,18 @@ class InOutInput {
         this.gridXOffset = inputData.gridXOffset;
         this.gridYOffset = inputData.gridYOffset;
         this.side = inputData.side;
-        this.isInputItemAcceptable = inputData.isInputItemAcceptable;
+        this.acceptedItemId = inputData.acceptedItemId;
         this.scene = scene;
         this.progressBar = new ProgressBar(scene, -10000, -1000, this.progressBarSize);
         this.goal = inputData.goal;
+
+        this.itemImage = scene.add.image(0, 0, getGameItemDataById(this.acceptedItemId).imageName);
+        this.itemImage.setOrigin(0, 0);
+        this.itemImage.setDepth(OBJECT_DEPTH + 1);
+        this.itemImage.x = -1000;
+        this.itemImage.y = -1000;
+        this.itemImage.scale = 0.5;
+        this.itemImage.alpha = 0.7;
     }
 
     move() {
@@ -1035,6 +1046,19 @@ class InOutInput {
         this.inDetectionZone.y = this.parent.gridY * TILE_SIZE + this.gridYOffset * TILE_SIZE + this.getSideYOffset();
         this.inDetectionZone.width = this.side === SOUTH || this.side === NORTH ? TILE_SIZE : this.detectorSize;
         this.inDetectionZone.height = this.side === EAST || this.side === WEST ? TILE_SIZE : this.detectorSize;
+
+        this.itemImage.x = this.inDetectionZone.x;
+        this.itemImage.y = this.inDetectionZone.y;
+
+        if (this.side === NORTH) {
+            this.itemImage.y = this.itemImage.y - 8;
+        } else if (this.side === SOUTH) {
+            this.itemImage.y = this.itemImage.y - 16;
+        } else if (this.side === WEST) {
+            this.itemImage.x = this.itemImage.x - 16;
+        } else {
+            this.itemImage.x = this.itemImage.x - 32;
+        }
 
         this.progressBar.move(
             this.parent.gridX * TILE_SIZE + this.gridXOffset * TILE_SIZE + (TILE_SIZE - this.progressBarSize) / 2,
@@ -1075,7 +1099,7 @@ class InOutInput {
             }
 
             this.scene.removeItem(item);
-            if (!this.isInputItemAcceptable(item)) {
+            if (item.getId() != this.acceptedItemId) {
                 return true;
             }
 
@@ -1237,6 +1261,7 @@ abstract class InOutObject extends BasicObject {
         super.clear();
         this.progressBar.clear();
         this.inputs.forEach(input => input.progressBar.clear());
+        this.inputs.forEach(input => input.itemImage.destroy());
     }
 
 
@@ -1244,6 +1269,7 @@ abstract class InOutObject extends BasicObject {
         super.setVisible(isVisible);
         this.progressBar.setVisible(isVisible);
         this.inputs.forEach(input => input.progressBar.setVisible(isVisible));
+        this.inputs.forEach(input => input.itemImage.setVisible(isVisible));
     }
 
     abstract produceItems(x: number, y: number, scene: Phaser.Scene): GameItem[];
@@ -1257,7 +1283,7 @@ class SawMill extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof LogItem,
+                    acceptedItemId: LOG_ID,
                     goal: 1
                 },
             ],
@@ -1285,7 +1311,7 @@ class Workshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof LogItem,
+                    acceptedItemId: LOG_ID,
                     goal: 1
                 },
             ],
@@ -1313,7 +1339,7 @@ class WoodenNailsWorkshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 1
                 },
             ],
@@ -1964,7 +1990,7 @@ class PaperWorkshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 1
                 },
             ],
@@ -1996,7 +2022,7 @@ class FabricFactory extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof SheetOfPaperItem,
+                    acceptedItemId: SHEET_OF_PAPER_ID,
                     goal: 4
                 },
             ],
@@ -2024,14 +2050,14 @@ class SailFactory extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof BeamItem,
+                    acceptedItemId: BEAM_ID,
                     goal: 2
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof ClothItem,
+                    acceptedItemId: CLOTH_ID,
                     goal: 3
                 },
             ],
@@ -2061,14 +2087,14 @@ class ChairFactory extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 2
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    acceptedItemId: NAIL_ID,
                     goal: 6
                 },
             ],
@@ -2098,14 +2124,14 @@ class TableFactory extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 6
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    acceptedItemId: NAIL_ID,
                     goal: 10
                 },
             ],
@@ -2135,21 +2161,21 @@ class SculptingWorkshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 10
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof LogItem,
+                    acceptedItemId: LOG_ID,
                     goal: 1
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    acceptedItemId: NAIL_ID,
                     goal: 4
                 },
             ],
@@ -2181,14 +2207,14 @@ class BoatFactory extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 20
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    acceptedItemId: NAIL_ID,
                     goal: 50
                 },
             ],
@@ -2218,28 +2244,28 @@ class SailboatFactory extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -2,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof BoatItem,
+                    acceptedItemId: BOAT_ID,
                     goal: 1
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 10
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    acceptedItemId: NAIL_ID,
                     goal: 50
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof SailItem,
+                    acceptedItemId: SAIL_ID,
                     goal: 1
                 },
 
@@ -2274,35 +2300,35 @@ class SailboatWorkshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -2,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof SimpleSailboatItem,
+                    acceptedItemId: SIMPLE_SAILBOAT_ID,
                     goal: 1
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof ChairItem,
+                    acceptedItemId: CHAIR_ID,
                     goal: 8
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof TableItem,
+                    acceptedItemId: TABLE_ID,
                     goal: 4
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 5
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 2,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    acceptedItemId: NAIL_ID,
                     goal: 10
                 },
             ],
@@ -2338,28 +2364,28 @@ class ShipWorkshop extends InOutObject {
                     gridXOffset: -1,
                     gridYOffset: -2,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof BigSailboatItem,
+                    acceptedItemId: BIG_SAILBOAT_ID,
                     goal: 1
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: -1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof PlankItem,
+                    acceptedItemId: PLANK_ID,
                     goal: 10
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 0,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof NailItem,
+                    acceptedItemId: NAIL_ID,
                     goal: 20
                 },
                 {
                     gridXOffset: -1,
                     gridYOffset: 1,
                     side: EAST,
-                    isInputItemAcceptable: (item) => item instanceof SculptureItem,
+                    acceptedItemId: SCULPTURE_ID,
                     goal: 2
                 }
             ],

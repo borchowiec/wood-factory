@@ -53,6 +53,10 @@ export class MainScene extends Scene {
             frameWidth: 32,
             frameHeight: 32
         });
+        this.load.spritesheet('cash', 'assets/cash-anim.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        });
 
         gameItemsData
             .forEach(item => this.load.image(item.imageName, `assets/items/${item.imageName}.png`));
@@ -88,6 +92,14 @@ export class MainScene extends Scene {
                 "explosion",
                 {frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}),
             frameRate: 40,
+            repeat: 0
+        });
+        this.anims.create({
+            key: "cashAnim",
+            frames: this.anims.generateFrameNumbers(
+                "cash",
+                {frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}),
+            frameRate: 30,
             repeat: 0
         });
     }
@@ -132,11 +144,24 @@ export class MainScene extends Scene {
             }
         });
 
-        this.input.on('pointerup', () => {
+        this.input.on('pointerup', (pointer) => {
             this.isDragging = false;
             if (this.longPressTimer) {
                 this.longPressTimer.remove(false);
                 this.longPressTimer = null;
+
+                if (this.newPlacableObject || this.movingObject || this.selectedObject) {
+                    return;
+                }
+
+                const clickedItem = this.items
+                    .find(item => item.isClicked(pointer.worldX, pointer.worldY));
+                if (clickedItem) {
+                    const animX = clickedItem.getX();
+                    const animY = clickedItem.getY();
+                    clickedItem.moveTo(-1000, -1000);
+                    this.createCashAnimation(animX, animY);
+                }
             }
         });
 
@@ -405,5 +430,14 @@ export class MainScene extends Scene {
     removeItem(item) {
         item.clear();
         this.items.splice(this.items.indexOf(item), 1);
+    }
+
+    createCashAnimation(x, y) {
+        const cash = this.add.sprite(x + 32, y + 32, 'cash');
+        cash.setDepth(OBJECT_DEPTH + 30);
+        cash.play('cashAnim');
+        cash.on('animationcomplete', () => {
+            cash.destroy();
+        });
     }
 }

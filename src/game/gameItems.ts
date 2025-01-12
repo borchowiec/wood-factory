@@ -1,5 +1,20 @@
 import {DEBUG, DEBUG_DEPTH, ITEM_DEPTH, TILE_SIZE} from "./properties.js";
 import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import {i} from "vite/dist/node/types.d-aGj9QkWt";
+import * as Phaser from "phaser";
 
 const DETECTOR_SIZE = TILE_SIZE / 10;
 
@@ -67,6 +82,7 @@ export abstract class GameItem {
     abstract getY(): number;
     abstract areDetectionZonesOverlapping(gameItem: GameItem): boolean;
     abstract areDetectionZonesOverlappingWithRect(rect: Phaser.Geom.Rectangle): boolean;
+    abstract isClicked(x: number, y: number): boolean;
     abstract getId(): number;
 }
 
@@ -123,6 +139,11 @@ abstract class BasicItem extends GameItem {
         );
 
         this.debugGraphics = scene.add.graphics();
+    }
+
+
+    isClicked(x: number, y: number): boolean {
+        return Phaser.Geom.Rectangle.Contains(this.itemDetectionZone, x, y);
     }
 
     getId(): number {

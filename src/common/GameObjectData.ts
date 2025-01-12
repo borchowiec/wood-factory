@@ -243,8 +243,10 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(2700, {productionTimeMs: 5000})
         .build(),
     new GameObjectDataBuilder(SCULPTING_WORKSHOP_ID, "sculptingWorkshop", "Sculpting Workshop", 8000)
-        .withSpritesDirName("conveyorBelt")
-                .withUpgrade(0, {productionTimeMs: 15000})
+        .withIconFileName("sprite.png")
+        .withSpriteFrameWidth(128)
+        .withSpriteFrameHeight(192)
+        .withUpgrade(0, {productionTimeMs: 15000})
         .withUpgrade(1600, {productionTimeMs: 10000})
         .withUpgrade(2100, {productionTimeMs: 7500})
         .withUpgrade(2800, {productionTimeMs: 5000})

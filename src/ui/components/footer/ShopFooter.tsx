@@ -1,6 +1,6 @@
-import React, {useState} from "react";
+import React from "react";
 import {IonButton, IonIcon} from "@ionic/react";
-import {backspaceOutline, chevronBackOutline, chevronForwardOutline} from "ionicons/icons";
+import {backspaceOutline} from "ionicons/icons";
 import {FooterType} from "./Footer";
 import {GameObjectData, gameObjects} from "../../../common/GameObjectData";
 import {MainScene} from "../../../game/MainScene.js";
@@ -16,8 +16,6 @@ export const ShopFooter: React.FC = (
             mainScene: MainScene
         }
 ) => {
-    const [shopCurrentPage, setShopCurrentPage] = useState(0);
-
     return (
         <>
             <IonButton style={{margin: "5px", fontSize: "20px", opacity: 0.7}} shape="round" color="danger"
@@ -25,55 +23,55 @@ export const ShopFooter: React.FC = (
                 <IonIcon slot="icon-only" icon={backspaceOutline}></IonIcon>
             </IonButton>
             <BaseFooter>
-                <IonButton fill="clear" size="large"
-                           style={{color: LIGHT_COLOR}}
-                           onClick={() => setShopCurrentPage((shopCurrentPage - 1 + Math.ceil(gameObjects.length / 3)) % Math.ceil(gameObjects.length / 3))}>
-                    <IonIcon slot="icon-only" icon={chevronBackOutline}></IonIcon>
-                </IonButton>
-                {gameObjects.slice(shopCurrentPage * 3, shopCurrentPage * 3 + 3).map(object => (
-                    <IonButton
-                        key={object.id}
-                        fill="clear"
-                        size="large"
-                        style={{
-                            color: LIGHT_COLOR,
-                            border: `1px solid ${LIGHT_COLOR}`,
-                            borderRadius: "10px",
-                            padding: "0",
-                            width: "100px"
-                        }}
-                        onClick={() => {
-                            const response = mainScene.setNewPotentialObject(object.id);
-                            if (response.success) {
-                                setCurrentObject(object);
-                                setFooter(FooterType.PLACING_NEW_OBJECT);
-                            } else {
-                                showErrorMessage(response.message);
-                            }
-                        }}
-                    >
-                        <div style={{
-                            padding: "0",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center"
-                        }}>
-                            <div style={{fontSize: "10px", fontWeight: "bold"}}>
-                                ${object.price}
+                <div style={{
+                    display: "flex",
+                    overflowX: "auto",
+                    padding: "10px",
+                    gap: "10px",
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none"
+                }}>
+                    {gameObjects.map(object => (
+                        <IonButton
+                            key={object.id}
+                            fill="clear"
+                            size="large"
+                            style={{
+                                color: LIGHT_COLOR,
+                                border: `1px solid ${LIGHT_COLOR}`,
+                                borderRadius: "10px",
+                                padding: "0",
+                                width: "100px",
+                                minWidth: "100px",
+                                flexShrink: 0
+                            }}
+                            onClick={() => {
+                                const response = mainScene.setNewPotentialObject(object.id);
+                                if (response.success) {
+                                    setCurrentObject(object);
+                                    setFooter(FooterType.PLACING_NEW_OBJECT);
+                                } else {
+                                    showErrorMessage(response.message);
+                                }
+                            }}
+                        >
+                            <div style={{
+                                padding: "0",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center"
+                            }}>
+                                <div style={{fontSize: "10px", fontWeight: "bold"}}>
+                                    ${object.price}
+                                </div>
+                                <img src={object.imageData.icon} style={{marginBottom: "5px", maxWidth: "32px", maxHeight: "32px"}}/>
+                                <div style={{fontSize: "10px", fontWeight: "bold"}}>
+                                    {object.name}
+                                </div>
                             </div>
-                            <img src={object.imageData.icon} style={{marginBottom: "5px", maxWidth: "32px", maxHeight: "32px"}}/>
-                            <div style={{fontSize: "10px", fontWeight: "bold"}}>
-                                {object.name}
-                            </div>
-                        </div>
-                    </IonButton>
-                ))}
-                <IonButton fill="clear" size="large"
-                           onClick={() => setShopCurrentPage((shopCurrentPage + 1) % Math.ceil(gameObjects.length / 3))}
-                           style={{color: LIGHT_COLOR}}
-                >
-                    <IonIcon slot="icon-only" icon={chevronForwardOutline}></IonIcon>
-                </IonButton>
+                        </IonButton>
+                    ))}
+                </div>
             </BaseFooter>
         </>
     )

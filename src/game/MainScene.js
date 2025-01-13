@@ -12,7 +12,7 @@ import {paintTerrain} from "./terrainPainter.js";
 import {gameObjects, getGameObjectById} from "../common/GameObjectData";
 import {createObject} from "./gameObjects.ts";
 import {gameItemsData} from "./gameItems.ts";
-import {getSerializedState, loadSerializedState} from "../common/Serialization.ts";
+import {loadSerializedState, saveSerializedState} from "../common/Serialization.ts";
 
 function getSuccessResponse() {
     return {success: true};
@@ -107,12 +107,10 @@ export class MainScene extends Scene {
 
         loadSerializedState(this, this.serializedState);
 
-        setInterval(() => {
-                console.log("serializing");
-                const serializedState = getSerializedState(this);
-                console.log(serializedState);
-            },
-            1000 * 10);
+        setInterval(() => saveSerializedState(this), 1000 * 30);
+        document.addEventListener('pause', () => saveSerializedState(this));
+        document.addEventListener('beforeunload', () => saveSerializedState(this));
+        document.addEventListener('visibilitychange', () => saveSerializedState(this));
     }
 
     initializeCamera(tileSize, gridWidth, gridHeight) {

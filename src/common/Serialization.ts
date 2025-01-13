@@ -2,6 +2,7 @@ import {MainScene} from "../game/MainScene.js";
 import {getGameItemDataById} from "../game/gameItems";
 import {GRID_HEIGHT, GRID_WIDTH} from "../game/properties";
 import {createObject} from "../game/gameObjects";
+import {Preferences} from "@capacitor/preferences";
 
 export type SerializedGameItem = {
     id: number;
@@ -36,6 +37,32 @@ export function loadSerializedState(mainScene: MainScene, serializedState: Seria
             newObject.placeOnGrid();
             newObject.paint();
         });
+}
+
+export async function saveSerializedState(mainScene: MainScene) {
+    const serializedState = getSerializedState(mainScene);
+    console.log(serializedState);
+
+    await Preferences.set({
+        key: "GAME_STATE_KEY",
+        value: JSON.stringify(serializedState),
+    })
+        .then(() => console.log("done"))
+        .catch(e => console.log(e));
+}
+
+export async function loadGameState(): Promise<SerializedGameState> {
+    const initSerializedState: SerializedGameState = {
+        money: 10000,
+        items: [],
+        objects: []
+    };
+
+    const {value} = await Preferences.get({key: "GAME_STATE_KEY"});
+    if (value) {
+        return JSON.parse(value);
+    }
+    return initSerializedState;
 }
 
 export function getSerializedState(mainScene: MainScene): SerializedGameState {

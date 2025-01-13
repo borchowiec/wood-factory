@@ -6,7 +6,7 @@ import {addCircleOutline, removeCircleOutline} from "ionicons/icons";
 import {FooterType, getFooter} from "../components/footer/Footer";
 import {GameObjectData} from "../../common/GameObjectData";
 import {UpgradeDetails} from "../components/footer/ObjectActionsFooter";
-import {SerializedGameState} from "../../common/Serialization";
+import {loadGameState, SerializedGameState} from "../../common/Serialization";
 
 const GamePage: React.FC = () => {
     const [game, setGame] = useState(undefined as Game);
@@ -26,106 +26,12 @@ const GamePage: React.FC = () => {
     };
 
     useEffect(() => {
-        const initSerializedState: SerializedGameState = {
-            "money": 981125,
-            "items": [
-                {
-                    "id": 2,
-                    "x": 192.1,
-                    "y": 192
-                },
-                {
-                    "id": 1,
-                    "x": 256,
-                    "y": 64
-                }
-            ],
-            "objects": [
-                {
-                    "id": 3,
-                    "details": {
-                        "direction": 1,
-                        "currentLevel": 3,
-                        "gridX": 0,
-                        "gridY": 1
-                    }
-                },
-                {
-                    "id": 0,
-                    "details": {
-                        "direction": 1,
-                        "currentLevel": 4,
-                        "gridX": 1,
-                        "gridY": 1
-                    }
-                },
-                {
-                    "id": 0,
-                    "details": {
-                        "direction": 1,
-                        "currentLevel": 1,
-                        "gridX": 2,
-                        "gridY": 3
-                    }
-                },
-                {
-                    "id": 0,
-                    "details": {
-                        "direction": 2,
-                        "currentLevel": 2,
-                        "gridX": 2,
-                        "gridY": 6
-                    }
-                },
-                {
-                    "id": 9,
-                    "details": {
-                        "direction": 1,
-                        "currentLevel": 1,
-                        "gridX": 3,
-                        "gridY": 1,
-                        "storedItems": [
-                            1,
-                            2,
-                            3,
-                            4,
-                            5,
-                            6
-                        ]
-                    }
-                },
-                {
-                    "id": 0,
-                    "details": {
-                        "direction": 0,
-                        "currentLevel": 1,
-                        "gridX": 3,
-                        "gridY": 6
-                    }
-                },
-                {
-                    "id": 4,
-                    "details": {
-                        "direction": 3,
-                        "currentLevel": 1,
-                        "gridX": 4,
-                        "gridY": 3,
-                        "inputsNumberOfItems": [
-                            0
-                        ]
-                    }
-                }
-            ]
-        };
-        // const initSerializedState: SerializedGameState = {
-        //     money: 10000,
-        //     items: [],
-        //     objects: []
-        // };
-
         const handleLoad = () => {
-            const game = launch(initSerializedState);
-            setGame(game);
+            loadGameState()
+                .then(serializedState => {
+                    const game = launch(serializedState);
+                    setGame(game);
+                })
         }
         const handleMoneyUpdate = event => {
             setMoney(event.detail.money);

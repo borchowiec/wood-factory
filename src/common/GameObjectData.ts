@@ -266,7 +266,9 @@ export const gameObjects: GameObjectData[] = [
         .withUpgrade(12000, {productionTimeMs: 7000})
         .build(),
     new GameObjectDataBuilder(SAILBOAT_WORKSHOP_ID, "sailboatWorkshop", "Sailboat Workshop", 18000)
-        .withSpritesDirName("conveyorBelt")
+        .withSpriteFrameHeight(320)
+        .withSpriteFrameWidth(128)
+        .withSpriteAnimationFrames([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) // todo check if works
         .withUpgrade(0, {productionTimeMs: 60000})
         .withUpgrade(8000, {productionTimeMs: 30000})
         .withUpgrade(15000, {productionTimeMs: 15000})

@@ -17,53 +17,55 @@ import {
     getGameObjectById,
     LOG_PRODUCER_ID,
     MERGER_ID,
-    PAPER_WORKSHOP_ID, SAIL_FACTORY_ID, SAILBOAT_FACTORY_ID, SAILBOAT_WORKSHOP_ID,
-    SAW_MILL_ID, SCULPTING_WORKSHOP_ID, SHIP_WORKSHOP_ID,
+    PAPER_WORKSHOP_ID,
+    SAIL_FACTORY_ID,
+    SAILBOAT_FACTORY_ID,
+    SAILBOAT_WORKSHOP_ID,
+    SAW_MILL_ID,
+    SCULPTING_WORKSHOP_ID,
+    SHIP_WORKSHOP_ID,
     SORTER_ID,
     SPLITTER_ID,
-    STORAGE_ID, TABLE_FACTORY_ID,
+    STORAGE_ID,
+    TABLE_FACTORY_ID,
     WOODEN_NAILS_WORKSHOP_ID,
     WORKSHOP_ID
 } from "../common/GameObjectData.ts";
 import {
     BEAM_ID,
-    BeamItem, BIG_SAILBOAT_ID, BigSailboatItem, BOAT_ID, BoatItem, CHAIR_ID, ChairItem, CLOTH_ID,
+    BeamItem,
+    BIG_SAILBOAT_ID,
+    BigSailboatItem,
+    BOAT_ID,
+    BoatItem,
+    CHAIR_ID,
+    ChairItem,
+    CLOTH_ID,
     ClothItem,
     GameItem,
     GameItemData,
     getGameItemDataById,
     getNextGameItemData,
     LOG_ID,
-    LogItem, NAIL_ID,
-    NailItem, PLANK_ID,
-    PlankItem, SAIL_ID, SailItem, SCULPTURE_ID, SculptureItem, SHEET_OF_PAPER_ID,
-    SheetOfPaperItem, ShipItem, SIMPLE_SAILBOAT_ID, SimpleSailboatItem, TABLE_ID, TableItem
+    LogItem,
+    NAIL_ID,
+    NailItem,
+    PLANK_ID,
+    PlankItem,
+    SAIL_ID,
+    SailItem,
+    SCULPTURE_ID,
+    SculptureItem,
+    SHEET_OF_PAPER_ID,
+    SheetOfPaperItem,
+    ShipItem,
+    SIMPLE_SAILBOAT_ID,
+    SimpleSailboatItem,
+    TABLE_ID,
+    TableItem
 } from "./gameItems";
 import * as Phaser from "phaser";
 import {SerializedGameObject} from "../common/Serialization";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import {i, j} from "vite/dist/node/types.d-aGj9QkWt";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import {isVisible} from "@testing-library/user-event/utils/misc/isVisible";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import {Simulate} from "react-dom/test-utils";
-import progress = Simulate.progress;
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
 
 const NORTH = 0;
 const EAST = 1;
@@ -538,21 +540,9 @@ abstract class BasicObject extends GameObject {
 
 
     copy(): GameObject {
-        const gameObject = createObject(this.getId(), this.scene);
-
-        gameObject.tileOffsets = this.tileOffsets;
-        gameObject.direction = this.direction;
-        gameObject.isSelected = this.isSelected;
-        gameObject.sprite.setRotation(Phaser.Math.DegToRad(DIRECTIONS_TO_DEG[this.direction]));
-        gameObject.move(this.gridX, this.gridY);
-        gameObject.updateVisibility();
-
-        gameObject.incorrectPlacementGraphics.clear();
-        gameObject.correctPlacementGraphics.clear();
-        gameObject.initializePlacementGraphics(gameObject.incorrectPlacementGraphics, CANNOT_BE_PLACED_COLOR);
-        gameObject.initializePlacementGraphics(gameObject.correctPlacementGraphics, CAN_BE_PLACED_COLOR);
-
-        gameObject.setLevel(this.currentLevel);
+        const serializedGameObject = this.serialize();
+        const gameObject = createObject(serializedGameObject.id, this.scene);
+        gameObject.deserialize(serializedGameObject);
 
         return gameObject;
     }
@@ -1205,19 +1195,6 @@ abstract class InOutObject extends BasicObject {
             .forEach((numberOfItems, index) => this.inputs[index].setNumberOfItems(numberOfItems));
     }
 
-    copy(): GameObject {
-        const newObject = super.copy() as InOutObject;
-
-        newObject.productionTimeMs = this.productionTimeMs;
-        newObject.productionStartTimestampInMs = this.productionStartTimestampInMs;
-        newObject.isProducing = this.isProducing;
-        for (let i = 0; i < newObject.inputs.length; i++) {
-            newObject.inputs[i].setNumberOfItems(this.inputs[i].getNumberOfItems());
-        }
-
-        return newObject;
-    }
-
     getDetectionZones(): Phaser.Geom.Rectangle[] {
         return [this.outDetectionZone, ...this.inputs.map(input => input.inDetectionZone)];
     }
@@ -1745,15 +1722,6 @@ class Storage extends BasicObject {
         this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
     }
 
-    copy(): GameObject {
-        const newObject = super.copy() as Storage;
-
-        newObject.capacity = this.capacity;
-        newObject.storedItems = this.storedItems;
-
-        return newObject;
-    }
-
     getId(): number {
         return STORAGE_ID;
     }
@@ -2030,12 +1998,6 @@ class Sorter extends BasicObject {
 
     modify() {
         this.setItem(getNextGameItemData(this.item.id));
-    }
-
-    copy(): GameObject {
-        const gameObject = super.copy() as Sorter;
-        gameObject.setItem(this.item);
-        return gameObject;
     }
 
     setItem(item: GameItemData) {

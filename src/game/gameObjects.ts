@@ -40,14 +40,25 @@ import {
     SheetOfPaperItem, ShipItem, SIMPLE_SAILBOAT_ID, SimpleSailboatItem, TABLE_ID, TableItem
 } from "./gameItems";
 import * as Phaser from "phaser";
+import {SerializedGameObject} from "../common/Serialization";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
 import {i, j} from "vite/dist/node/types.d-aGj9QkWt";
 import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import {isVisible} from "@testing-library/user-event/utils/misc/isVisible";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
+import * as Phaser from "phaser";
 import {Simulate} from "react-dom/test-utils";
 import progress = Simulate.progress;
 import * as Phaser from "phaser";
-import {isVisible} from "@testing-library/user-event/utils/misc/isVisible";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
 import * as Phaser from "phaser";
@@ -218,6 +229,8 @@ export abstract class GameObject {
     abstract hasModifyButton(): boolean;
 
     abstract modify(): void;
+    abstract serialize(): SerializedGameObject;
+    abstract deserialize(data: SerializedGameObject): void;
 }
 
 abstract class BasicObject extends GameObject {
@@ -296,6 +309,33 @@ abstract class BasicObject extends GameObject {
         this.updateVisibility();
     }
 
+
+    serialize(): SerializedGameObject {
+        return {
+            id: this.getId(),
+            details: {
+                direction: this.direction,
+                currentLevel: this.currentLevel,
+                gridX: this.gridX,
+                gridY: this.gridY
+            }
+        };
+    }
+
+    deserialize(data: SerializedGameObject) {
+        const details = data.details;
+
+        this.setLevel(details.currentLevel);
+
+        for (let i = 0; i < 4; i++) {
+            if (this.direction === details.direction) {
+                break;
+            }
+            this.rotate();
+        }
+
+        this.move(details.gridX, details.gridY);
+    }
 
     hasModifyButton(): boolean {
         return false;
@@ -1152,6 +1192,19 @@ abstract class InOutObject extends BasicObject {
     }
 
 
+    serialize(): SerializedGameObject {
+        const serialized = super.serialize();
+        serialized.details.inputsNumberOfItems = this.inputs.map(input => input.getNumberOfItems());
+        return serialized;
+    }
+
+    deserialize(data: SerializedGameObject) {
+        super.deserialize(data);
+        data.details
+            .inputsNumberOfItems
+            .forEach((numberOfItems, index) => this.inputs[index].setNumberOfItems(numberOfItems));
+    }
+
     copy(): GameObject {
         const newObject = super.copy() as InOutObject;
 
@@ -1661,7 +1714,7 @@ class Storage extends BasicObject {
         0
     );
     private capacity: number;
-    private storedItems = [];
+    private storedItems: number[] = []; // contains ids of items
     private progressBar: ProgressBar;
 
     constructor(gridX, gridY, scene) {
@@ -1679,6 +1732,18 @@ class Storage extends BasicObject {
         this.progressBar = new ProgressBar(this.scene, gridX * TILE_SIZE, gridY * TILE_SIZE, TILE_SIZE);
     }
 
+
+    serialize(): SerializedGameObject {
+        const serializedGameObject = super.serialize();
+        serializedGameObject.details.storedItems = this.storedItems;
+        return serializedGameObject;
+    }
+
+    deserialize(data: SerializedGameObject) {
+        super.deserialize(data);
+        this.storedItems = data.details.storedItems;
+        this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
+    }
 
     copy(): GameObject {
         const newObject = super.copy() as Storage;
@@ -1740,14 +1805,14 @@ class Storage extends BasicObject {
         if (this.storedItems.length < this.capacity) {
             const item = getFirstItemThatOverlapsWithRectangle(this.inDetectionZone, items);
             if (item) {
-                item.moveTo(TILE_SIZE * GRID_WIDTH * 2, TILE_SIZE * GRID_HEIGHT * 2);
-                this.storedItems.push(item);
+                this.storedItems.push(item.getId());
+                this.scene.removeItem(item);
                 this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
             }
         }
 
         if (this.storedItems.length > 0 && getFirstItemThatOverlapsWithRectangle(this.outDetectionZone, items) === null) {
-            const item = this.storedItems.shift();
+            const itemId = this.storedItems.shift();
             let x = this.outDetectionZone.x;
             let y = this.outDetectionZone.y;
             if (this.direction === WEST) {
@@ -1755,7 +1820,10 @@ class Storage extends BasicObject {
             } else if (this.direction === NORTH) {
                 y -= TILE_SIZE - this.outDetectionZone.height;
             }
-            item.moveTo(x, y);
+
+            const item = getGameItemDataById(itemId).createNew(x, y, this.scene);
+            this.scene.items.push(item);
+            item.paint();
             this.progressBar.updateProgress(this.storedItems.length / this.capacity * 100);
         }
     }

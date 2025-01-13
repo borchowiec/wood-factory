@@ -27,18 +27,100 @@ const GamePage: React.FC = () => {
 
     useEffect(() => {
         const initSerializedState: SerializedGameState = {
-            "money": 994900,
+            "money": 981125,
             "items": [
                 {
-                    "id": 1,
-                    "x": 106.95,
+                    "id": 2,
+                    "x": 192.1,
                     "y": 192
+                },
+                {
+                    "id": 1,
+                    "x": 256,
+                    "y": 64
+                }
+            ],
+            "objects": [
+                {
+                    "id": 3,
+                    "details": {
+                        "direction": 1,
+                        "currentLevel": 3,
+                        "gridX": 0,
+                        "gridY": 1
+                    }
+                },
+                {
+                    "id": 0,
+                    "details": {
+                        "direction": 1,
+                        "currentLevel": 4,
+                        "gridX": 1,
+                        "gridY": 1
+                    }
+                },
+                {
+                    "id": 0,
+                    "details": {
+                        "direction": 1,
+                        "currentLevel": 1,
+                        "gridX": 2,
+                        "gridY": 3
+                    }
+                },
+                {
+                    "id": 0,
+                    "details": {
+                        "direction": 2,
+                        "currentLevel": 2,
+                        "gridX": 2,
+                        "gridY": 6
+                    }
+                },
+                {
+                    "id": 9,
+                    "details": {
+                        "direction": 1,
+                        "currentLevel": 1,
+                        "gridX": 3,
+                        "gridY": 1,
+                        "storedItems": [
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6
+                        ]
+                    }
+                },
+                {
+                    "id": 0,
+                    "details": {
+                        "direction": 0,
+                        "currentLevel": 1,
+                        "gridX": 3,
+                        "gridY": 6
+                    }
+                },
+                {
+                    "id": 4,
+                    "details": {
+                        "direction": 3,
+                        "currentLevel": 1,
+                        "gridX": 4,
+                        "gridY": 3,
+                        "inputsNumberOfItems": [
+                            0
+                        ]
+                    }
                 }
             ]
         };
         // const initSerializedState: SerializedGameState = {
         //     money: 10000,
-        //     items: []
+        //     items: [],
+        //     objects: []
         // };
 
         const handleLoad = () => {

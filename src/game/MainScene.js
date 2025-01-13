@@ -2,7 +2,8 @@ import {Scene} from "phaser";
 import {
     GRID_HEIGHT,
     GRID_WIDTH,
-    LONG_PRESS_DURATION_MS, OBJECT_DEPTH,
+    LONG_PRESS_DURATION_MS,
+    OBJECT_DEPTH,
     SELL_PRICE,
     SPRITE_FRAME_SIZE,
     TILE_SIZE
@@ -11,6 +12,7 @@ import {paintTerrain} from "./terrainPainter.js";
 import {gameObjects, getGameObjectById} from "../common/GameObjectData";
 import {createObject} from "./gameObjects.ts";
 import {gameItemsData} from "./gameItems.ts";
+import {getSerializedState, loadSerializedState} from "../common/Serialization.ts";
 
 function getSuccessResponse() {
     return {success: true};
@@ -25,15 +27,17 @@ export class MainScene extends Scene {
         super({key: 'MainScene'})
 
         this.grid = null;
-        this.money = null;
+        this.money = 0;
         this.newPlacableObject = null;
         this.movingObject = null;
         this.tempExistingObject = null;
         this.selectedObject = null;
         this.longPressTimer = null;
-        this.items = null;
+        this.items = [];
+    }
 
-        this.setMoney(1000000);
+    init(data) {
+        this.serializedState = data.serializedState;
     }
 
     preload() {
@@ -72,8 +76,6 @@ export class MainScene extends Scene {
 
         this.initializeGrid(gridWidth, gridHeight);
 
-        this.items = [];
-
         this.newPlacableObject = null;
         gameObjects.forEach(gameObject => {
             this.anims.create({
@@ -102,6 +104,15 @@ export class MainScene extends Scene {
             frameRate: 30,
             repeat: 0
         });
+
+        loadSerializedState(this, this.serializedState);
+
+        setInterval(() => {
+                console.log("serializing");
+                const serializedState = getSerializedState(this);
+                console.log(serializedState);
+            },
+            1000 * 10);
     }
 
     initializeCamera(tileSize, gridWidth, gridHeight) {
@@ -239,7 +250,7 @@ export class MainScene extends Scene {
         const riverSpeed = 1;
         for (let i = this.items.length - 1; i >= 0; i--) {
             const item = this.items[i];
-            if (item.getY() >= -TILE_SIZE/2) {
+            if (item.getY() >= -TILE_SIZE / 2) {
                 continue;
             }
 
@@ -253,7 +264,7 @@ export class MainScene extends Scene {
             }
             item.moveTo(newX, newY);
 
-            if (item.getX() < -TILE_SIZE*2) {
+            if (item.getX() < -TILE_SIZE * 2) {
                 this.items.splice(i, 1);
                 item.clear();
                 this.setMoney(this.money + item.getPrice());

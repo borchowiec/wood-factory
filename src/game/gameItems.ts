@@ -1,20 +1,6 @@
 import {DEBUG, DEBUG_DEPTH, ITEM_DEPTH, TILE_SIZE} from "./properties.js";
 import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import * as Phaser from "phaser";
-import {i} from "vite/dist/node/types.d-aGj9QkWt";
-import * as Phaser from "phaser";
+import {SerializedGameItem} from "../common/Serialization";
 
 const DETECTOR_SIZE = TILE_SIZE / 10;
 
@@ -22,11 +8,14 @@ export class GameItemData {
     readonly id: number;
     readonly imageName: string;
     readonly price: number;
+    readonly createNew: (x: number, y: number, scene: Phaser.Scene) => GameItem;
 
-    constructor(id: number, imageName: string, price: number) {
+    constructor(id: number, imageName: string, price: number,
+                createNew: (x: number, y: number, scene: Phaser.Scene) => GameItem) {
         this.id = id;
         this.imageName = imageName;
         this.price = price;
+        this.createNew = createNew;
     }
 }
 
@@ -46,20 +35,34 @@ export const BIG_SAILBOAT_ID = 13;
 export const SHIP_ID = 14;
 
 export const gameItemsData = [
-    new GameItemData(LOG_ID, "log", 10),
-    new GameItemData(PLANK_ID, "plank", 25),
-    new GameItemData(BEAM_ID, "beam", 25),
-    new GameItemData(NAIL_ID, "nail", 7),
-    new GameItemData(SHEET_OF_PAPER_ID, "paper", 10),
-    new GameItemData(CLOTH_ID, "fabric", 50),
-    new GameItemData(SAIL_ID, "sail", 100),
-    new GameItemData(CHAIR_ID, "chair", 75),
-    new GameItemData(TABLE_ID, "table", 150),
-    new GameItemData(SCULPTURE_ID, "sculpture", 200),
-    new GameItemData(BOAT_ID, "boat", 400),
-    new GameItemData(SIMPLE_SAILBOAT_ID, "simple-sailboat", 700),
-    new GameItemData(BIG_SAILBOAT_ID, "big-sailboat", 1200),
-    new GameItemData(SHIP_ID, "ship", 2500),
+    new GameItemData(LOG_ID, "log", 10,
+        (x: number, y: number, scene: Phaser.Scene) => new LogItem(x, y, scene)),
+    new GameItemData(PLANK_ID, "plank", 25,
+        (x: number, y: number, scene: Phaser.Scene) => new PlankItem(x, y, scene)),
+    new GameItemData(BEAM_ID, "beam", 25,
+        (x: number, y: number, scene: Phaser.Scene) => new BeamItem(x, y, scene)),
+    new GameItemData(NAIL_ID, "nail", 7,
+        (x: number, y: number, scene: Phaser.Scene) => new NailItem(x, y, scene)),
+    new GameItemData(SHEET_OF_PAPER_ID, "paper", 10,
+        (x: number, y: number, scene: Phaser.Scene) => new SheetOfPaperItem(x, y, scene)),
+    new GameItemData(CLOTH_ID, "fabric", 50,
+        (x: number, y: number, scene: Phaser.Scene) => new ClothItem(x, y, scene)),
+    new GameItemData(SAIL_ID, "sail", 100,
+        (x: number, y: number, scene: Phaser.Scene) => new SailItem(x, y, scene)),
+    new GameItemData(CHAIR_ID, "chair", 75,
+        (x: number, y: number, scene: Phaser.Scene) => new ChairItem(x, y, scene)),
+    new GameItemData(TABLE_ID, "table", 150,
+        (x: number, y: number, scene: Phaser.Scene) => new TableItem(x, y, scene)),
+    new GameItemData(SCULPTURE_ID, "sculpture", 200,
+        (x: number, y: number, scene: Phaser.Scene) => new SculptureItem(x, y, scene)),
+    new GameItemData(BOAT_ID, "boat", 400,
+        (x: number, y: number, scene: Phaser.Scene) => new BoatItem(x, y, scene)),
+    new GameItemData(SIMPLE_SAILBOAT_ID, "simple-sailboat", 700,
+        (x: number, y: number, scene: Phaser.Scene) => new SimpleSailboatItem(x, y, scene)),
+    new GameItemData(BIG_SAILBOAT_ID, "big-sailboat", 1200,
+        (x: number, y: number, scene: Phaser.Scene) => new BigSailboatItem(x, y, scene)),
+    new GameItemData(SHIP_ID, "ship", 2500,
+        (x: number, y: number, scene: Phaser.Scene) => new ShipItem(x, y, scene))
 ]
 
 export function getGameItemDataById(id: number): GameItemData {
@@ -84,6 +87,7 @@ export abstract class GameItem {
     abstract areDetectionZonesOverlappingWithRect(rect: Phaser.Geom.Rectangle): boolean;
     abstract isClicked(x: number, y: number): boolean;
     abstract getId(): number;
+    abstract serialize(): SerializedGameItem;
 }
 
 abstract class BasicItem extends GameItem {
@@ -141,6 +145,13 @@ abstract class BasicItem extends GameItem {
         this.debugGraphics = scene.add.graphics();
     }
 
+    serialize(): SerializedGameItem {
+        return {
+            id: this.id,
+            x: this.x,
+            y: this.y
+        };
+    }
 
     isClicked(x: number, y: number): boolean {
         return Phaser.Geom.Rectangle.Contains(this.itemDetectionZone, x, y);

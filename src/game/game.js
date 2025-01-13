@@ -1,8 +1,8 @@
 import {AUTO, Game, Scale} from "phaser";
 import {MainScene} from "./MainScene.js";
 
-export function launch() {
-    return new Game({
+export function launch(serializedState) {
+    const game = new Game({
         type: AUTO,
         pixelArt: true,
         scale: {
@@ -16,6 +16,12 @@ export function launch() {
         physics: {
             default: "arcade",
         },
-        scene: MainScene,
+        scene: MainScene
     });
+
+    game.scene.start("MainScene", {
+        serializedState: serializedState
+    });
+
+    return game;
 }

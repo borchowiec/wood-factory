@@ -6,6 +6,7 @@ import {addCircleOutline, removeCircleOutline} from "ionicons/icons";
 import {FooterType, getFooter} from "../components/footer/Footer";
 import {GameObjectData} from "../../common/GameObjectData";
 import {UpgradeDetails} from "../components/footer/ObjectActionsFooter";
+import {SerializedGameState} from "../../common/Serialization";
 
 const GamePage: React.FC = () => {
     const [game, setGame] = useState(undefined as Game);
@@ -25,8 +26,23 @@ const GamePage: React.FC = () => {
     };
 
     useEffect(() => {
+        const initSerializedState: SerializedGameState = {
+            "money": 994900,
+            "items": [
+                {
+                    "id": 1,
+                    "x": 106.95,
+                    "y": 192
+                }
+            ]
+        };
+        // const initSerializedState: SerializedGameState = {
+        //     money: 10000,
+        //     items: []
+        // };
+
         const handleLoad = () => {
-            const game = launch();
+            const game = launch(initSerializedState);
             setGame(game);
         }
         const handleMoneyUpdate = event => {
